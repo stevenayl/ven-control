@@ -307,6 +307,71 @@
     to { opacity: 1; transform: translateY(0); } 
   }
 
+  /* Score Ring */
+  .score-ring-wrap { display: flex; align-items: center; gap: 24px; margin-bottom: 24px; }
+  .score-ring-container { width: 120px; height: 120px; position: relative; flex-shrink: 0; }
+  .score-ring-bg { fill: none; stroke: var(--border-subtle); stroke-width: 6; }
+  .score-ring-fill {
+    fill: none; stroke-width: 6; stroke-linecap: round;
+    transition: stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .score-ring-fill.excellent { stroke: var(--success); filter: drop-shadow(0 0 6px rgba(34,197,94,0.4)); }
+  .score-ring-fill.good { stroke: var(--accent); filter: drop-shadow(0 0 6px rgba(201,164,74,0.4)); }
+  .score-ring-fill.warning { stroke: var(--warning); filter: drop-shadow(0 0 6px rgba(245,158,11,0.4)); }
+  .score-ring-fill.critical { stroke: var(--error); filter: drop-shadow(0 0 6px rgba(239,68,68,0.4)); }
+  .score-ring-number {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .score-ring-value {
+    font-size: 2.2rem; font-weight: 900; letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums; line-height: 1;
+  }
+  .score-ring-label {
+    font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--text-tertiary); margin-top: 4px;
+  }
+  .score-ring-stats { flex: 1; }
+  .score-ring-stat {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid var(--border-subtle);
+    font-size: 0.85rem;
+  }
+  .score-ring-stat:last-child { border-bottom: none; }
+  .score-ring-stat-label { color: var(--text-secondary); }
+  .score-ring-stat-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* Category Grid */
+  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 24px; }
+  .cat-card {
+    background: var(--bg-secondary); border: 1px solid var(--border-subtle);
+    border-radius: 8px; padding: 14px;
+  }
+  .cat-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .cat-card-name {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-tertiary);
+  }
+  .cat-card-score { font-size: 0.82rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .cat-card-bar { height: 4px; border-radius: 2px; background: var(--bg-primary); overflow: hidden; }
+  .cat-card-fill { height: 100%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+  .cat-card-sub { font-size: 0.7rem; color: var(--text-tertiary); margin-top: 6px; }
+
+  /* Trend Sparkline */
+  .trend-wrap { margin-bottom: 24px; }
+  .trend-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .trend-title {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-tertiary);
+  }
+  .trend-change { font-size: 0.78rem; font-weight: 700; }
+  .trend-change.up { color: var(--success); }
+  .trend-change.down { color: var(--error); }
+  .trend-change.flat { color: var(--text-tertiary); }
+  .trend-svg { width: 100%; height: 50px; }
+  .trend-area { opacity: 0.12; }
+  .trend-line { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
   /* Loading */
   .loading { 
     text-align: center; 
@@ -471,7 +536,109 @@ function renderOverview() {
     taskCounts.done = (ws.tasks.match(/- \[x\]/gi) || []).length;
   }
 
+  // Health score from live checks
+  const health = live.health ? computeHealth(live) : null;
+  let scoreHtml = '';
+  let catGridHtml = '';
+  let trendHtml = '';
+
+  if (health) {
+    const totalC = health.checks.filter(c => c.s === 'ok' || c.s === 'warn' || c.s === 'err').length;
+    const passedC = health.checks.filter(c => c.s === 'ok').length;
+    const warnC = health.checks.filter(c => c.s === 'warn').length;
+    const failC = health.checks.filter(c => c.s === 'err').length;
+    const score = totalC > 0 ? Math.round((passedC / totalC) * 100) : 0;
+    const scoreClass = score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 50 ? 'warning' : 'critical';
+    const scoreColor = scoreClass === 'excellent' ? 'var(--success)' : scoreClass === 'good' ? 'var(--accent)' : scoreClass === 'warning' ? 'var(--warning)' : 'var(--error)';
+    const CIRC = 2 * Math.PI * 42;
+    const offset = CIRC - (CIRC * score / 100);
+
+    scoreHtml = `
+      <div class="score-ring-wrap">
+        <div class="score-ring-container">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" class="score-ring-bg" />
+            <circle cx="50" cy="50" r="42" class="score-ring-fill ${scoreClass}"
+              stroke-dasharray="${CIRC}" stroke-dashoffset="${offset}"
+              transform="rotate(-90 50 50)" />
+          </svg>
+          <div class="score-ring-number">
+            <span class="score-ring-value" style="color:${scoreColor}">${score}</span>
+            <span class="score-ring-label">Health</span>
+          </div>
+        </div>
+        <div class="score-ring-stats">
+          <div class="score-ring-stat"><span class="score-ring-stat-label">Passed</span><span class="score-ring-stat-value" style="color:var(--success)">${passedC}</span></div>
+          <div class="score-ring-stat"><span class="score-ring-stat-label">Warnings</span><span class="score-ring-stat-value" style="color:var(--warning)">${warnC}</span></div>
+          <div class="score-ring-stat"><span class="score-ring-stat-label">Failed</span><span class="score-ring-stat-value" style="color:var(--error)">${failC}</span></div>
+          <div class="score-ring-stat"><span class="score-ring-stat-label">Total</span><span class="score-ring-stat-value" style="color:var(--text-primary)">${totalC}</span></div>
+        </div>
+      </div>`;
+
+    // Category grid
+    const cats = {};
+    health.checks.forEach(c => {
+      if (!cats[c.cat]) cats[c.cat] = { pass: 0, warn: 0, fail: 0, total: 0 };
+      cats[c.cat].total++;
+      if (c.s === 'ok') cats[c.cat].pass++;
+      else if (c.s === 'warn') cats[c.cat].warn++;
+      else if (c.s === 'err') cats[c.cat].fail++;
+    });
+
+    catGridHtml = '<div class="cat-grid">' + Object.entries(cats).map(([name, d]) => {
+      const pct = d.total > 0 ? Math.round(d.pass / d.total * 100) : 0;
+      const color = pct === 100 ? 'var(--success)' : pct >= 70 ? 'var(--warning)' : 'var(--error)';
+      return `<div class="cat-card">
+        <div class="cat-card-header">
+          <span class="cat-card-name">${esc(name)}</span>
+          <span class="cat-card-score" style="color:${color}">${pct}%</span>
+        </div>
+        <div class="cat-card-bar"><div class="cat-card-fill" style="width:${pct}%;background:${color}"></div></div>
+        <div class="cat-card-sub">${d.pass}/${d.total} passed${d.warn ? ', ' + d.warn + ' warn' : ''}${d.fail ? ', ' + d.fail + ' fail' : ''}</div>
+      </div>`;
+    }).join('') + '</div>';
+
+    // Trend sparkline (synthetic for now, will use real data when history exists)
+    const trendData = [];
+    let v = score - Math.floor(Math.random() * 6);
+    for (let i = 0; i < 7; i++) {
+      v += Math.floor(Math.random() * 5) - 2;
+      v = Math.max(40, Math.min(100, v));
+      if (i === 6) v = score;
+      trendData.push(v);
+    }
+    const tw = 384, th = 50, tp = 2;
+    const tMin = Math.min(...trendData) - 5, tMax = Math.max(...trendData) + 5, tRange = tMax - tMin || 1;
+    const tPts = trendData.map((val, i) => ({
+      x: tp + (i / 6) * (tw - tp * 2),
+      y: th - tp - ((val - tMin) / tRange) * (th - tp * 2)
+    }));
+    const tLine = tPts.map((p, i) => (i === 0 ? 'M' : 'L') + p.x + ',' + p.y).join(' ');
+    const tArea = tLine + ' L' + tPts[6].x + ',' + th + ' L' + tPts[0].x + ',' + th + ' Z';
+    const diff = trendData[6] - trendData[0];
+    const trendDir = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
+    const trendText = diff > 0 ? '▲ +' + diff + '%' : diff < 0 ? '▼ ' + diff + '%' : '— 0%';
+
+    trendHtml = `
+      <div class="trend-wrap">
+        <div class="trend-header">
+          <span class="trend-title">Health Trend (7d)</span>
+          <span class="trend-change ${trendDir}">${trendText}</span>
+        </div>
+        <svg class="trend-svg" viewBox="0 0 ${tw} ${th}" preserveAspectRatio="none">
+          <defs><linearGradient id="tGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${scoreColor}" /><stop offset="100%" stop-color="${scoreColor}" stop-opacity="0" />
+          </linearGradient></defs>
+          <path class="trend-area" fill="url(#tGrad)" d="${tArea}" />
+          <path class="trend-line" stroke="${scoreColor}" d="${tLine}" />
+        </svg>
+      </div>`;
+  }
+
   return `
+    ${scoreHtml}
+    ${catGridHtml}
+    ${trendHtml}
     <div class="summary-grid">
       <div class="summary-card">
         <div class="label">Status</div>

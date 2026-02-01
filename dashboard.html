@@ -75,6 +75,33 @@
 .breakdown-bar .seg.off { background: var(--border); }
 .fleet-pct { font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
 
+/* ── Score Badge ────────────────────────── */
+.score-badge {
+  width: 38px; height: 38px; position: relative; flex-shrink: 0;
+}
+.score-badge svg { width: 100%; height: 100%; }
+.score-badge-bg { fill: none; stroke: var(--border-subtle); stroke-width: 3; }
+.score-badge-fill { fill: none; stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+.score-badge-fill.excellent { stroke: var(--success); filter: drop-shadow(0 0 3px rgba(34,197,94,0.3)); }
+.score-badge-fill.good { stroke: var(--accent); filter: drop-shadow(0 0 3px rgba(201,164,74,0.3)); }
+.score-badge-fill.warning { stroke: var(--warning); filter: drop-shadow(0 0 3px rgba(245,158,11,0.3)); }
+.score-badge-fill.critical { stroke: var(--error); filter: drop-shadow(0 0 3px rgba(239,68,68,0.3)); }
+.score-badge-text {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+
+/* ── Category Bars ─────────────────────── */
+.cat-bars { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; margin-bottom: 8px; }
+.cat-bar-item { display: flex; align-items: center; gap: 5px; }
+.cat-bar-label {
+  font-size: 0.58rem; font-weight: 600; color: var(--text-tertiary);
+  width: 52px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
+}
+.cat-bar-track { flex: 1; height: 3px; border-radius: 2px; background: var(--bg-primary); overflow: hidden; }
+.cat-bar-fill { height: 100%; border-radius: 2px; transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+.cat-bar-pct { font-size: 0.55rem; font-weight: 700; font-variant-numeric: tabular-nums; width: 24px; text-align: right; }
+
 /* ── Agent Grid ────────────────────────── */
 .agents-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
@@ -405,19 +432,48 @@ function buildAgentHTML(id, a, health) {
   const mainSess = sessions.find(s => s.key?.endsWith(':main') || s.label === 'main');
   const ctxPct = mainSess?.contextPct || null;
 
+  // Score calculation
+  const totalChecks = health.checks.filter(c => c.s === 'ok' || c.s === 'warn' || c.s === 'err').length;
+  const passedChecks = health.checks.filter(c => c.s === 'ok').length;
+  const score = totalChecks > 0 ? Math.round((passedChecks / totalChecks) * 100) : 0;
+  const scoreClass = score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 50 ? 'warning' : 'critical';
+  const CIRC = 2 * Math.PI * 15;
+  const offset = CIRC - (CIRC * score / 100);
+
+  // Category aggregation
+  const cats = {};
+  health.checks.forEach(c => {
+    if (!cats[c.cat]) cats[c.cat] = { pass: 0, total: 0 };
+    cats[c.cat].total++;
+    if (c.s === 'ok') cats[c.cat].pass++;
+  });
+
   let html = `
     <div class="agent-header">
       <div class="agent-name">
         <span class="agent-emoji">${a.emoji || '🤖'}</span>
         <span>${a.name || id}</span>
       </div>
+      <div class="score-badge">
+        <svg viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="15" class="score-badge-bg" />
+          <circle cx="18" cy="18" r="15" class="score-badge-fill ${scoreClass}"
+            stroke-dasharray="${CIRC}" stroke-dashoffset="${offset}"
+            transform="rotate(-90 18 18)" />
+        </svg>
+        <span class="score-badge-text ${scoreClass === 'excellent' ? 'status-healthy' : scoreClass === 'critical' ? 'status-down' : ''}" style="color:var(--${scoreClass === 'excellent' ? 'success' : scoreClass === 'good' ? 'accent' : scoreClass === 'warning' ? 'warning' : 'error'})">${score}</span>
+      </div>
       <span class="agent-badge ${badgeClass}">${badgeLabel}</span>
     </div>
     <div class="health-bar">
       ${health.checks.map(c => `<div class="health-seg ${c.s === 'ok' ? 'ok' : c.s === 'warn' ? 'warn' : c.s === 'err' ? 'err' : 'off'}" title="${c.name}: ${c.d}"></div>`).join('')}
     </div>
-    <div class="health-pills">
-      ${health.checks.map(c => `<span class="health-pill"><span class="dot ${c.s === 'ok' ? 'g' : c.s === 'warn' ? 'y' : c.s === 'err' ? 'r' : 'x'}"></span>${c.name}</span>`).join('')}
+    <div class="cat-bars">
+      ${Object.entries(cats).map(([name, d]) => {
+        const pct = Math.round(d.pass / d.total * 100);
+        const color = pct === 100 ? 'var(--success)' : pct >= 70 ? 'var(--warning)' : 'var(--error)';
+        return `<div class="cat-bar-item"><span class="cat-bar-label">${name}</span><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="cat-bar-pct" style="color:${color}">${pct}%</span></div>`;
+      }).join('')}
     </div>
     <div class="metrics-row">
       <div class="metric"><div class="metric-label">Model</div><div class="metric-value" style="font-size:0.78rem">${model}</div></div>
