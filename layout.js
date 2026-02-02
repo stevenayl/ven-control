@@ -30,13 +30,15 @@
         ? 'create'
         : path === '/analytics.html'
           ? 'analytics'
-          : path === '/waterfall.html'
-            ? 'waterfall'
-            : path.startsWith('/agent/')
-              ? 'agent-detail'
-              : path === '/gandalf-view.html'
-                ? 'gandalf'
-                : 'other';
+          : path === '/tokens.html'
+            ? 'tokens'
+            : path === '/waterfall.html'
+              ? 'waterfall'
+              : path.startsWith('/agent/')
+                ? 'agent-detail'
+                : path === '/gandalf-view.html'
+                  ? 'gandalf'
+                  : 'other';
   const activeAgentId =
     activePage === 'agent-detail'
       ? decodeURIComponent(path.split('/').filter(Boolean).pop())
@@ -431,6 +433,10 @@ body.sidebar-collapsed .topbar { grid-column: 1 / -1; }
       <a href="/analytics.html" class="nav-item${isActive('analytics')}">
         <i data-lucide="bar-chart-3" class="nav-icon"></i>
         <span class="nav-label">Cost Analytics</span>
+      </a>
+      <a href="/tokens.html" class="nav-item${isActive('tokens')}">
+        <i data-lucide="target" class="nav-icon"></i>
+        <span class="nav-label">Token Usage</span>
       </a>
       <a href="/waterfall.html" class="nav-item${isActive('waterfall')}">
         <i data-lucide="activity" class="nav-icon"></i>

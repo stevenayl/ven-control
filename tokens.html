@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Token Usage — Clawd Control</title>
+<style>
+/* ═══════════════════════════════════════════
+   TOKEN USAGE — Page-specific styles
+   Layout, sidebar, topbar, theme, design system
+   provided by layout.js
+   ═══════════════════════════════════════════ */
+
+/* ── Page Layout ───────────────────────── */
+.page-header {
+  margin-bottom: 24px;
+}
+.page-header h1 {
+  font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;
+  display: flex; align-items: center; gap: 10px;
+}
+.page-header p {
+  font-size: 0.82rem; color: var(--text-tertiary); margin-top: 4px;
+}
+
+/* ── Stats Grid ────────────────────────── */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); padding: 14px 16px;
+  transition: all 0.35s ease;
+}
+.stat-card:hover { border-color: var(--border); }
+[data-theme="light"] .stat-card { box-shadow: var(--shadow-sm); }
+.stat-label {
+  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-tertiary); margin-bottom: 4px; font-weight: 600;
+}
+.stat-value {
+  font-size: 1.5rem; font-weight: 800; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.stat-value.accent { color: var(--accent); }
+.stat-value.success { color: var(--success); }
+.stat-value.info { color: var(--info); }
+.stat-value.cache { color: var(--accent); }
+.stat-sub { font-size: 0.7rem; color: var(--text-tertiary); margin-top: 4px; }
+
+/* ── Controls Bar ──────────────────────── */
+.controls {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 16px; padding: 12px 16px;
+  background: var(--surface); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+.control-group { display: flex; align-items: center; gap: 6px; }
+.control-label {
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-tertiary);
+}
+.control-select {
+  padding: 6px 10px; border-radius: var(--radius-sm);
+  background: var(--bg-primary); border: 1px solid var(--border-subtle);
+  color: var(--text-primary); font-family: var(--font-sans);
+  font-size: 0.8rem; cursor: pointer;
+}
+.control-select:focus { border-color: var(--accent); outline: none; }
+
+/* ── Chart Containers ──────────────────── */
+.chart-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin-bottom: 12px;
+}
+.chart-card {
+  background: var(--surface); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); padding: 16px;
+  transition: all 0.35s ease;
+}
+.chart-card:hover { border-color: var(--border); }
+[data-theme="light"] .chart-card { box-shadow: var(--shadow-sm); }
+
+.chart-card-full {
+  background: var(--surface); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); padding: 16px;
+  margin-bottom: 12px;
+}
+
+.chart-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-subtle);
+}
+.chart-title {
+  font-size: 0.85rem; font-weight: 700; color: var(--text-primary);
+  display: flex; align-items: center; gap: 6px;
+}
+.chart-subtitle {
+  font-size: 0.7rem; color: var(--text-tertiary);
+}
+
+/* ── Line Chart (Canvas) ───────────────── */
+.line-chart-container { position: relative; height: 280px; }
+.line-chart { width: 100%; height: 100%; }
+
+/* ── Donut Chart ───────────────────────── */
+.donut-container {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 200px; gap: 20px;
+}
+.donut-canvas { width: 160px; height: 160px; }
+.donut-legend { display: flex; flex-direction: column; gap: 8px; }
+.donut-legend-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 0; border-bottom: 1px solid var(--border-subtle);
+}
+.donut-legend-item:last-child { border-bottom: none; }
+.donut-color {
+  width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
+}
+.donut-label {
+  flex: 1; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);
+}
+.donut-value {
+  font-size: 0.72rem; font-weight: 700; font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+/* ── Bar Chart (CSS) ───────────────────── */
+.bar-chart { display: flex; flex-direction: column; gap: 10px; min-height: 200px; }
+.bar-item { display: flex; flex-direction: column; gap: 4px; }
+.bar-header { display: flex; justify-content: space-between; align-items: center; }
+.bar-label {
+  font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 6px;
+}
+.bar-total {
+  font-size: 0.72rem; font-weight: 700; font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.bar-track {
+  height: 28px; background: var(--bg-primary);
+  border-radius: var(--radius-sm); overflow: hidden; position: relative;
+  display: flex;
+}
+.bar-segment {
+  height: 100%; display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700; color: white;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bar-segment.input { background: #3b82f6; }
+.bar-segment.output { background: #22c55e; }
+.bar-segment.cache { background: #c9a44a; }
+
+/* ── Cache Efficiency Panel ────────────── */
+.cache-metrics {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 16px; min-height: 200px;
+}
+.cache-metric {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center;
+  background: var(--bg-primary); border-radius: var(--radius-md);
+  padding: 20px;
+}
+.cache-metric-value {
+  font-size: 2.5rem; font-weight: 800; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.cache-metric-value.good { color: var(--success); }
+.cache-metric-value.warn { color: var(--warning); }
+.cache-metric-value.info { color: var(--info); }
+.cache-metric-label {
+  font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px;
+  text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
+}
+.cache-metric-sub {
+  font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;
+}
+
+/* ── Loading State ─────────────────────── */
+.loading-state {
+  text-align: center; padding: 40px 20px; color: var(--text-tertiary);
+}
+.loading-state .icon { font-size: 2rem; margin-bottom: 12px; opacity: 0.4; }
+.loading-state p { font-size: 0.85rem; }
+
+/* ── Empty State ───────────────────────── */
+.empty-state {
+  text-align: center; padding: 40px 20px; color: var(--text-secondary);
+}
+.empty-state .icon { font-size: 2rem; margin-bottom: 12px; opacity: 0.4; }
+.empty-state p { font-size: 0.85rem; }
+
+/* ── Responsive ────────────────────────── */
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .chart-row { grid-template-columns: 1fr; }
+  .cache-metrics { grid-template-columns: 1fr; }
+}
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.fade-up { animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+</style>
+</head>
+<body>
+
+<main class="main">
+  <div class="page-header fade-up">
+    <h1>🎯 Token Usage</h1>
+    <p>Token consumption trends and cache efficiency across all agents</p>
+  </div>
+
+  <div class="controls fade-up" style="animation-delay:.05s">
+    <div class="control-group">
+      <span class="control-label">Time Range</span>
+      <select class="control-select" id="rangeSelect" onchange="loadTokens()">
+        <option value="7">Last 7 Days</option>
+        <option value="30" selected>Last 30 Days</option>
+        <option value="90">Last 90 Days</option>
+        <option value="all">All Time</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Agent</span>
+      <select class="control-select" id="agentSelect" onchange="loadTokens()">
+        <option value="all">All Agents</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="stats-grid fade-up" style="animation-delay:.1s">
+    <div class="stat-card">
+      <div class="stat-label">Total Tokens</div>
+      <div class="stat-value info" id="statTotalTokens">—</div>
+      <div class="stat-sub" id="statTokensSub">Loading...</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Tokens/Call</div>
+      <div class="stat-value" id="statAvgTokens">—</div>
+      <div class="stat-sub" id="statAvgSub">Per API call</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Cache Hit Rate</div>
+      <div class="stat-value cache" id="statCacheRate">—</div>
+      <div class="stat-sub" id="statCacheSub">Efficiency</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Cost</div>
+      <div class="stat-value accent" id="statTotalCost">—</div>
+      <div class="stat-sub" id="statCostSub">All messages</div>
+    </div>
+  </div>
+
+  <div class="chart-card-full fade-up" style="animation-delay:.15s">
+    <div class="chart-header">
+      <div class="chart-title">
+        <i data-lucide="trending-up"></i>
+        Daily Token Usage
+      </div>
+      <div class="chart-subtitle" id="dailySubtitle">Input, output, and cache tokens over time</div>
+    </div>
+    <div class="line-chart-container">
+      <canvas id="dailyTokenChart" class="line-chart"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-row fade-up" style="animation-delay:.2s">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">
+          <i data-lucide="pie-chart"></i>
+          Input vs Output
+        </div>
+      </div>
+      <div id="inputOutputChart" class="donut-container">
+        <div class="loading-state">
+          <div class="icon">⏳</div>
+          <p>Loading data...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">
+          <i data-lucide="zap"></i>
+          Cache Efficiency
+        </div>
+      </div>
+      <div id="cacheEfficiency" class="cache-metrics">
+        <div class="loading-state">
+          <div class="icon">⏳</div>
+          <p>Loading data...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card-full fade-up" style="animation-delay:.25s">
+    <div class="chart-header">
+      <div class="chart-title">
+        <i data-lucide="users"></i>
+        Token Usage by Agent
+      </div>
+      <div class="chart-subtitle">Input, output, and cache breakdown per agent</div>
+    </div>
+    <div id="agentTokenChart" class="bar-chart">
+      <div class="loading-state">
+        <div class="icon">⏳</div>
+        <p>Loading data...</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="/layout.js"></script>
+<script>
+'use strict';
+
+const $ = s => document.querySelector(s);
+let tokenData = null;
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+
+document.addEventListener('layout:snapshot', () => {
+  populateAgentSelect();
+  loadTokens();
+});
+
+// Also load immediately — don't wait for SSE snapshot
+setTimeout(() => {
+  if (!tokenData) loadTokens();
+}, 500);
+
+function populateAgentSelect() {
+  const select = $('#agentSelect');
+  const ids = Object.keys(agentState).sort();
+  const agentOptions = ids.map(id => {
+    const a = agentState[id];
+    return `<option value="${id}">${a.emoji || '🤖'} ${a.name || id}</option>`;
+  }).join('');
+  select.innerHTML = '<option value="all">All Agents</option>' + agentOptions;
+}
+
+// ═══════════════════════════════════════════
+// LOAD TOKEN DATA
+// ═══════════════════════════════════════════
+
+async function loadTokens() {
+  const range = $('#rangeSelect').value;
+  const agent = $('#agentSelect').value;
+
+  try {
+    const res = await fetch(`/api/tokens?range=${range}&agent=${agent}`);
+    tokenData = await res.json();
+    renderAll();
+  } catch (e) {
+    console.error('Failed to load token data:', e);
+    showToast('Failed to load token data', 'error');
+  }
+}
+
+// ═══════════════════════════════════════════
+// RENDER ALL CHARTS
+// ═══════════════════════════════════════════
+
+function renderAll() {
+  if (!tokenData) return;
+
+  renderStats();
+  renderDailyChart();
+  renderInputOutputDonut();
+  renderCacheEfficiency();
+  renderAgentBreakdown();
+
+  refreshIcons();
+}
+
+function renderStats() {
+  const d = tokenData;
+
+  $('#statTotalTokens').textContent = formatNumber(d.totalTokens);
+  $('#statTokensSub').textContent = `${formatNumber(d.inputTokens)} in, ${formatNumber(d.outputTokens)} out`;
+
+  $('#statAvgTokens').textContent = formatNumber(d.avgTokensPerCall);
+  $('#statAvgSub').textContent = `${formatNumber(d.apiCalls)} API calls`;
+
+  $('#statCacheRate').textContent = d.cacheHitRate > 0 ? `${d.cacheHitRate}%` : '0%';
+  $('#statCacheSub').textContent = d.cacheReadTokens > 0 ? `${formatNumber(d.cacheReadTokens)} cached` : 'No cache hits';
+
+  $('#statTotalCost').textContent = d.totalCost > 0 ? `$${d.totalCost.toFixed(2)}` : '$0.00';
+  $('#statCostSub').textContent = d.range === 'all' ? 'All time' : `Last ${d.range} days`;
+}
+
+function renderDailyChart() {
+  const canvas = $('#dailyTokenChart');
+  const ctx = canvas.getContext('2d');
+  const timeline = tokenData.overTime || [];
+
+  if (timeline.length === 0) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-tertiary');
+    ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('No data available', canvas.width / 2, canvas.height / 2);
+    return;
+  }
+
+  // Responsive canvas sizing
+  const parent = canvas.parentElement;
+  canvas.width = parent.clientWidth * 2; // 2x for retina
+  canvas.height = parent.clientHeight * 2;
+  canvas.style.width = parent.clientWidth + 'px';
+  canvas.style.height = parent.clientHeight + 'px';
+  ctx.scale(2, 2);
+
+  const w = parent.clientWidth;
+  const h = parent.clientHeight;
+  const padding = { top: 20, right: 20, bottom: 40, left: 60 };
+  const chartW = w - padding.left - padding.right;
+  const chartH = h - padding.top - padding.bottom;
+
+  // Colors
+  const inputColor = '#3b82f6';
+  const outputColor = '#22c55e';
+  const cacheColor = '#c9a44a';
+  const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim();
+  const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border-subtle').trim();
+
+  // Find max tokens for scaling
+  const maxTokens = Math.max(...timeline.map(d => d.inputTokens + d.outputTokens + d.cacheReadTokens), 1000);
+
+  // Draw grid lines
+  ctx.strokeStyle = borderColor;
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = padding.top + (chartH / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, y);
+    ctx.lineTo(padding.left + chartW, y);
+    ctx.stroke();
+
+    // Y-axis labels
+    const value = maxTokens * (1 - i / 4);
+    ctx.fillStyle = textColor;
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(formatNumber(value), padding.left - 8, y + 3);
+  }
+
+  // Calculate points for each line
+  const points = timeline.map((d, i) => {
+    const x = padding.left + (chartW / (timeline.length - 1 || 1)) * i;
+    const inputY = padding.top + chartH - (d.inputTokens / maxTokens * chartH);
+    const outputY = padding.top + chartH - (d.outputTokens / maxTokens * chartH);
+    const cacheY = padding.top + chartH - (d.cacheReadTokens / maxTokens * chartH);
+    return { 
+      x, 
+      inputY, 
+      outputY, 
+      cacheY,
+      date: d.date,
+      input: d.inputTokens,
+      output: d.outputTokens,
+      cache: d.cacheReadTokens
+    };
+  });
+
+  // Draw area fills (stacked)
+  // Cache area
+  ctx.fillStyle = cacheColor + '30';
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, padding.top + chartH);
+  points.forEach(p => ctx.lineTo(p.x, p.cacheY));
+  ctx.lineTo(points[points.length - 1].x, padding.top + chartH);
+  ctx.closePath();
+  ctx.fill();
+
+  // Output area
+  ctx.fillStyle = outputColor + '30';
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, padding.top + chartH);
+  points.forEach(p => ctx.lineTo(p.x, p.outputY));
+  ctx.lineTo(points[points.length - 1].x, padding.top + chartH);
+  ctx.closePath();
+  ctx.fill();
+
+  // Input area
+  ctx.fillStyle = inputColor + '30';
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, padding.top + chartH);
+  points.forEach(p => ctx.lineTo(p.x, p.inputY));
+  ctx.lineTo(points[points.length - 1].x, padding.top + chartH);
+  ctx.closePath();
+  ctx.fill();
+
+  // Draw lines
+  const drawLine = (color, yAccessor) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    points.forEach((p, i) => {
+      const y = yAccessor(p);
+      if (i === 0) ctx.moveTo(p.x, y);
+      else ctx.lineTo(p.x, y);
+    });
+    ctx.stroke();
+
+    // Points
+    points.forEach(p => {
+      const y = yAccessor(p);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(p.x, y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  };
+
+  drawLine(inputColor, p => p.inputY);
+  drawLine(outputColor, p => p.outputY);
+  drawLine(cacheColor, p => p.cacheY);
+
+  // X-axis labels
+  ctx.fillStyle = textColor;
+  ctx.font = '10px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  const step = Math.max(1, Math.floor(timeline.length / 7));
+  timeline.forEach((d, i) => {
+    if (i % step === 0 || i === timeline.length - 1) {
+      const x = points[i].x;
+      const label = formatDate(d.date);
+      ctx.fillText(label, x, padding.top + chartH + 18);
+    }
+  });
+
+  // Legend
+  const legends = [
+    { color: inputColor, label: 'Input' },
+    { color: outputColor, label: 'Output' },
+    { color: cacheColor, label: 'Cache' }
+  ];
+  let legendX = padding.left;
+  const legendY = padding.top + chartH + 32;
+  legends.forEach(leg => {
+    ctx.fillStyle = leg.color;
+    ctx.fillRect(legendX, legendY, 12, 12);
+    ctx.fillStyle = textColor;
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(leg.label, legendX + 16, legendY + 9);
+    legendX += 80;
+  });
+}
+
+function renderInputOutputDonut() {
+  const container = $('#inputOutputChart');
+  const d = tokenData;
+
+  const total = d.inputTokens + d.outputTokens;
+  if (total === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No token data</p></div>';
+    return;
+  }
+
+  const inputPct = (d.inputTokens / total * 100);
+  const outputPct = (d.outputTokens / total * 100);
+
+  // Create canvas for donut
+  const canvas = document.createElement('canvas');
+  canvas.className = 'donut-canvas';
+  canvas.width = 320; // 2x for retina
+  canvas.height = 320;
+  canvas.style.width = '160px';
+  canvas.style.height = '160px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  const centerX = 80;
+  const centerY = 80;
+  const radius = 60;
+  const lineWidth = 24;
+
+  // Input arc
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, -Math.PI / 2, -Math.PI / 2 + (inputPct / 100 * Math.PI * 2));
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = lineWidth;
+  ctx.stroke();
+
+  // Output arc
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, -Math.PI / 2 + (inputPct / 100 * Math.PI * 2), -Math.PI / 2 + Math.PI * 2);
+  ctx.strokeStyle = '#22c55e';
+  ctx.lineWidth = lineWidth;
+  ctx.stroke();
+
+  // Center text
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim();
+  ctx.font = '700 16px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(formatNumber(total), centerX, centerY - 8);
+  ctx.font = '10px Inter, sans-serif';
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-tertiary').trim();
+  ctx.fillText('total tokens', centerX, centerY + 8);
+
+  // Legend
+  const legend = document.createElement('div');
+  legend.className = 'donut-legend';
+  legend.innerHTML = `
+    <div class="donut-legend-item">
+      <div class="donut-color" style="background:#3b82f6"></div>
+      <div class="donut-label">Input Tokens</div>
+      <div class="donut-value">${inputPct.toFixed(1)}%</div>
+    </div>
+    <div class="donut-legend-item">
+      <div class="donut-color" style="background:#22c55e"></div>
+      <div class="donut-label">Output Tokens</div>
+      <div class="donut-value">${outputPct.toFixed(1)}%</div>
+    </div>
+  `;
+
+  container.innerHTML = '';
+  container.appendChild(canvas);
+  container.appendChild(legend);
+}
+
+function renderCacheEfficiency() {
+  const container = $('#cacheEfficiency');
+  const d = tokenData;
+
+  const cacheHitRate = d.cacheHitRate || 0;
+  const cacheRead = d.cacheReadTokens || 0;
+  const cacheWrite = d.cacheWriteTokens || 0;
+  const ratio = cacheWrite > 0 ? (cacheRead / cacheWrite).toFixed(2) : '—';
+
+  container.innerHTML = `
+    <div class="cache-metric">
+      <div class="cache-metric-value ${cacheHitRate > 30 ? 'good' : cacheHitRate > 10 ? 'warn' : 'info'}">${cacheHitRate}%</div>
+      <div class="cache-metric-label">Cache Hit Rate</div>
+      <div class="cache-metric-sub">${formatNumber(cacheRead)} tokens saved</div>
+    </div>
+    <div class="cache-metric">
+      <div class="cache-metric-value info">${ratio}×</div>
+      <div class="cache-metric-label">Read/Write Ratio</div>
+      <div class="cache-metric-sub">${formatNumber(cacheRead)} read, ${formatNumber(cacheWrite)} write</div>
+    </div>
+  `;
+}
+
+function renderAgentBreakdown() {
+  const container = $('#agentTokenChart');
+  const agents = tokenData.byAgent || [];
+
+  if (agents.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No agent data</p></div>';
+    return;
+  }
+
+  const maxTotal = Math.max(...agents.map(a => a.inputTokens + a.outputTokens + a.cacheReadTokens), 1);
+
+  container.innerHTML = agents.map(a => {
+    const total = a.inputTokens + a.outputTokens + a.cacheReadTokens;
+    const inputPct = (a.inputTokens / maxTotal * 100);
+    const outputPct = (a.outputTokens / maxTotal * 100);
+    const cachePct = (a.cacheReadTokens / maxTotal * 100);
+
+    const agentInfo = agentState[a.agentId] || {};
+    const emoji = agentInfo.emoji || '🤖';
+    const name = agentInfo.name || a.agentId;
+
+    return `
+      <div class="bar-item">
+        <div class="bar-header">
+          <div class="bar-label">
+            <span>${emoji}</span>
+            <span>${truncate(name, 20)}</span>
+          </div>
+          <div class="bar-total">${formatNumber(total)}</div>
+        </div>
+        <div class="bar-track">
+          <div class="bar-segment input" style="width:${inputPct}%">
+            ${inputPct > 5 ? formatNumber(a.inputTokens) : ''}
+          </div>
+          <div class="bar-segment output" style="width:${outputPct}%">
+            ${outputPct > 5 ? formatNumber(a.outputTokens) : ''}
+          </div>
+          <div class="bar-segment cache" style="width:${cachePct}%">
+            ${cachePct > 5 ? formatNumber(a.cacheReadTokens) : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+
+function formatNumber(n) {
+  if (n > 1e6) return (n / 1e6).toFixed(1) + 'M';
+  if (n > 1e3) return (n / 1e3).toFixed(1) + 'K';
+  return n.toString();
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
+  const day = d.getDate().toString().padStart(2, '0');
+  return `${month}/${day}`;
+}
+
+function truncate(str, max) {
+  if (str.length <= max) return str;
+  return str.slice(0, max - 1) + '…';
+}
+
+</script>
+<script src="/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>

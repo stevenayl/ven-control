@@ -546,6 +546,165 @@ function getAnalytics(rangeStr, agentFilter) {
   };
 }
 
+// ── Token Analytics (granular breakdown by day and agent) ──
+function getTokenAnalytics(rangeStr, agentFilter) {
+  const AGENTS_DIR = join(homedir(), '.clawdbot', 'agents');
+  const range = rangeStr === 'all' ? Infinity : parseInt(rangeStr);
+  const cutoffDate = rangeStr === 'all' ? 0 : Date.now() - (range * 86400000);
+
+  // Aggregate data structures
+  let totalCost = 0;
+  let totalTokens = 0;
+  let inputTokens = 0;
+  let outputTokens = 0;
+  let cacheReadTokens = 0;
+  let cacheWriteTokens = 0;
+  let apiCalls = 0;
+
+  const byAgent = new Map(); // agentId -> {inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens, cost}
+  const byDate = new Map(); // date -> {inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens, cost}
+
+  // Discover all agents
+  let agentIds = [];
+  try {
+    agentIds = readdirSync(AGENTS_DIR, { withFileTypes: true })
+      .filter(d => d.isDirectory())
+      .map(d => d.name);
+  } catch {
+    // No agents dir
+  }
+
+  // Filter agents if needed
+  if (agentFilter !== 'all') {
+    agentIds = agentIds.filter(id => id === agentFilter);
+  }
+
+  // Parse sessions for each agent
+  for (const agentId of agentIds) {
+    const sessDir = join(AGENTS_DIR, agentId, 'sessions');
+    if (!existsSync(sessDir)) continue;
+
+    try {
+      const files = readdirSync(sessDir).filter(
+        f => f.endsWith('.jsonl') && !f.includes('.deleted.') && !f.includes('.archived.')
+      );
+
+      for (const file of files) {
+        const sessionPath = join(sessDir, file);
+        
+        // Check file mtime - skip if too old
+        try {
+          const stat = statSync(sessionPath);
+          if (stat.mtimeMs < cutoffDate) continue;
+        } catch {
+          continue;
+        }
+
+        // Parse session
+        try {
+          const content = readFileSync(sessionPath, 'utf8');
+          const lines = content.split('\n').filter(l => l.trim());
+
+          for (const line of lines) {
+            try {
+              const data = JSON.parse(line);
+
+              // Message cost extraction
+              if (data.type === 'message' && data.message) {
+                const msg = data.message;
+                const usage = msg.usage || {};
+
+                // Check timestamp
+                const ts = data.timestamp || msg.timestamp;
+                if (ts && ts < cutoffDate) continue;
+
+                // Extract token counts
+                const cost = usage.cost?.total || 0;
+                const input = usage.input || 0;
+                const output = usage.output || 0;
+                const cacheRead = usage.cacheRead || 0;
+                const cacheWrite = usage.cacheWrite || 0;
+
+                // Aggregate totals
+                totalCost += cost;
+                totalTokens += input + output + cacheRead;
+                inputTokens += input;
+                outputTokens += output;
+                cacheReadTokens += cacheRead;
+                cacheWriteTokens += cacheWrite;
+
+                if (msg.role === 'user') {
+                  apiCalls++;
+                }
+
+                // Track by date
+                if (ts) {
+                  const date = new Date(ts).toISOString().split('T')[0];
+                  if (!byDate.has(date)) {
+                    byDate.set(date, { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, cost: 0 });
+                  }
+                  const d = byDate.get(date);
+                  d.inputTokens += input;
+                  d.outputTokens += output;
+                  d.cacheReadTokens += cacheRead;
+                  d.cacheWriteTokens += cacheWrite;
+                  d.cost += cost;
+                }
+
+                // Track by agent
+                if (!byAgent.has(agentId)) {
+                  byAgent.set(agentId, { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, cost: 0 });
+                }
+                const a = byAgent.get(agentId);
+                a.inputTokens += input;
+                a.outputTokens += output;
+                a.cacheReadTokens += cacheRead;
+                a.cacheWriteTokens += cacheWrite;
+                a.cost += cost;
+              }
+            } catch {
+              // Skip malformed lines
+            }
+          }
+        } catch {
+          // Skip broken files
+        }
+      }
+    } catch {
+      // Skip agent if sessions dir unreadable
+    }
+  }
+
+  // Sort and format results
+  const byAgentArray = Array.from(byAgent.entries())
+    .map(([agentId, data]) => ({ agentId, ...data }))
+    .sort((a, b) => (b.inputTokens + b.outputTokens + b.cacheReadTokens) - (a.inputTokens + a.outputTokens + a.cacheReadTokens));
+
+  const byDateArray = Array.from(byDate.entries())
+    .map(([date, data]) => ({ date, ...data }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  // Calculate cache efficiency
+  const cacheHitRate = inputTokens > 0 ? (cacheReadTokens / (inputTokens + cacheReadTokens) * 100) : 0;
+  const avgTokensPerCall = apiCalls > 0 ? Math.round(totalTokens / apiCalls) : 0;
+
+  return {
+    range: rangeStr,
+    agentFilter,
+    totalCost: Math.round(totalCost * 10000) / 10000,
+    totalTokens,
+    inputTokens,
+    outputTokens,
+    cacheReadTokens,
+    cacheWriteTokens,
+    apiCalls,
+    cacheHitRate: Math.round(cacheHitRate * 10) / 10,
+    avgTokensPerCall,
+    byAgent: byAgentArray,
+    overTime: byDateArray,
+  };
+}
+
 // ── Session Trace (for waterfall view) ─────────────
 
 function getAllSessions() {
@@ -753,6 +912,156 @@ function getSessionTrace(sessionKey) {
   };
 }
 
+// ── Traces (delegation trees) ──────────────────────
+
+function getTraces() {
+  const AGENTS_DIR = join(homedir(), '.clawdbot', 'agents');
+  const traces = [];
+  const sessionMap = new Map(); // sessionKey -> session metadata
+
+  try {
+    const agentIds = readdirSync(AGENTS_DIR, { withFileTypes: true })
+      .filter(d => d.isDirectory())
+      .map(d => d.name);
+
+    // First pass: collect all sessions
+    for (const agentId of agentIds) {
+      const sessionsPath = join(AGENTS_DIR, agentId, 'sessions', 'sessions.json');
+      if (!existsSync(sessionsPath)) continue;
+
+      try {
+        const sessData = JSON.parse(readFileSync(sessionsPath, 'utf8'));
+        for (const [key, sess] of Object.entries(sessData)) {
+          if (!sess.sessionFile) continue;
+
+          // Extract session stats from JSONL
+          let cost = 0;
+          let tokens = 0;
+          let messageCount = 0;
+          let model = null;
+          let startTime = null;
+          let endTime = null;
+
+          if (existsSync(sess.sessionFile)) {
+            try {
+              const content = readFileSync(sess.sessionFile, 'utf8');
+              const lines = content.split('\n').filter(l => l.trim());
+
+              for (const line of lines) {
+                try {
+                  const entry = JSON.parse(line);
+                  
+                  if (entry.type === 'model_change' && entry.modelId) {
+                    model = entry.modelId;
+                  }
+
+                  if (entry.type === 'message' && entry.message) {
+                    const msg = entry.message;
+                    const usage = msg.usage || {};
+                    cost += usage.cost?.total || 0;
+                    tokens += (usage.input || 0) + (usage.output || 0) + (usage.cacheRead || 0);
+                    if (msg.role === 'user') messageCount++;
+
+                    const ts = entry.timestamp || msg.timestamp;
+                    if (ts) {
+                      if (!startTime || ts < startTime) startTime = ts;
+                      if (!endTime || ts > endTime) endTime = ts;
+                    }
+                  }
+                } catch {}
+              }
+            } catch {}
+          }
+
+          // Determine if this is a main session or subagent
+          const isMain = key.endsWith(':main') || !key.includes(':subagent:');
+          const label = sess.displayName || sess.origin?.label || key.split(':').pop() || 'unknown';
+
+          // Extract parent key for subagents
+          let parentKey = null;
+          if (key.includes(':subagent:')) {
+            // Parent is the main session of the same agent
+            const parts = key.split(':');
+            if (parts.length >= 4) {
+              parentKey = `${parts[0]}:${parts[1]}:main`;
+            }
+          }
+
+          const agentInfo = collector.state.get(agentId) || {};
+          sessionMap.set(key, {
+            key,
+            agentId,
+            agentName: agentInfo.name || agentId,
+            agentEmoji: agentInfo.emoji || '🤖',
+            label,
+            model: model ? model.replace('anthropic/', '').replace('openai/', '') : 'unknown',
+            cost,
+            tokens,
+            messageCount,
+            startTime,
+            endTime,
+            updatedAt: sess.updatedAt,
+            isMain,
+            parentKey,
+            children: [],
+          });
+        }
+      } catch {}
+    }
+
+    // Second pass: build tree structure
+    const rootSessions = [];
+    for (const [key, sess] of sessionMap.entries()) {
+      if (sess.isMain) {
+        rootSessions.push(sess);
+      } else if (sess.parentKey) {
+        const parent = sessionMap.get(sess.parentKey);
+        if (parent) {
+          parent.children.push(sess);
+        } else {
+          // Parent not found, treat as orphan root
+          rootSessions.push(sess);
+        }
+      }
+    }
+
+    // Sort roots by most recent first
+    rootSessions.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+    // Calculate summary stats
+    let totalSessions = sessionMap.size;
+    let totalSubagents = 0;
+    let totalCost = 0;
+    let maxDepth = 1;
+
+    function calculateDepth(sess, depth = 1) {
+      if (depth > maxDepth) maxDepth = depth;
+      totalCost += sess.cost || 0;
+      if (!sess.isMain) totalSubagents++;
+      for (const child of sess.children) {
+        calculateDepth(child, depth + 1);
+      }
+    }
+
+    for (const root of rootSessions) {
+      calculateDepth(root);
+    }
+
+    return {
+      traces: rootSessions,
+      summary: {
+        totalSessions,
+        totalSubagents,
+        totalCost: Math.round(totalCost * 10000) / 10000,
+        maxDepth,
+      },
+    };
+  } catch (e) {
+    console.error('getTraces error:', e);
+    return { traces: [], summary: { totalSessions: 0, totalSubagents: 0, totalCost: 0, maxDepth: 0 } };
+  }
+}
+
 // ── HTTP Server ─────────────────────────────────────
 
 const server = createServer((req, res) => {
@@ -900,6 +1209,21 @@ const server = createServer((req, res) => {
     return;
   }
 
+  // ── Token Analytics (granular breakdown) ──
+  if (path === '/api/tokens' && req.method === 'GET') {
+    try {
+      const range = url.searchParams.get('range') || '7';
+      const agentFilter = url.searchParams.get('agent') || 'all';
+      const result = getTokenAnalytics(range, agentFilter);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
   // ── Session Trace (Waterfall Data) ──
   if (path.startsWith('/api/session/') && path.endsWith('/trace') && req.method === 'GET') {
     try {
@@ -910,6 +1234,19 @@ const server = createServer((req, res) => {
         res.end(JSON.stringify({ error: 'Session not found' }));
         return;
       }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
+  // ── Traces (parent→child delegation trees) ──
+  if (path === '/api/traces' && req.method === 'GET') {
+    try {
+      const result = getTraces();
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(result));
     } catch (e) {
