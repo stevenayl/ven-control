@@ -6,7 +6,8 @@
  * Aggregates data from AgentCollector.
  */
 
-import { createServer } from 'http';
+import http from 'http';
+const { createServer } = http;
 import { readFileSync, existsSync, writeFileSync, copyFileSync, readdirSync, statSync } from 'fs';
 import { join, extname } from 'path';
 import { gzipSync } from 'zlib';
@@ -1187,6 +1188,55 @@ const server = createServer((req, res) => {
       const result = runSecurityAudit();
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(result));
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
+  // ── Crons ──
+  if (path === '/api/crons' && req.method === 'GET') {
+    try {
+      const configPath = join(homedir(), '.clawdbot', 'clawdbot.json');
+      if (!existsSync(configPath)) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Config not found' }));
+        return;
+      }
+      
+      const config = JSON.parse(readFileSync(configPath, 'utf8'));
+      const token = config.gateway?.auth?.token;
+      const port = config.gateway?.port || 18789;
+      
+      if (!token) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Gateway token not found' }));
+        return;
+      }
+
+      // Proxy to gateway API
+      const gatewayUrl = `http://127.0.0.1:${port}/api/cron/list`;
+      const gatewayReq = http.request(gatewayUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      }, (gatewayRes) => {
+        let data = '';
+        gatewayRes.on('data', chunk => { data += chunk; });
+        gatewayRes.on('end', () => {
+          res.writeHead(gatewayRes.statusCode, { 'Content-Type': 'application/json' });
+          res.end(data);
+        });
+      });
+      
+      gatewayReq.on('error', (e) => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `Gateway request failed: ${e.message}` }));
+      });
+      
+      gatewayReq.end();
     } catch (e) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: e.message }));

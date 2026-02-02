@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cron Jobs — Clawd Control</title>
+<style>
+/* ═══════════════════════════════════════════
+   CRONS — Page-specific styles
+   Layout, sidebar, topbar, theme, design system
+   provided by layout.js
+   ═══════════════════════════════════════════ */
+
+/* ── Page Layout ───────────────────────── */
+.page-header {
+  margin-bottom: 24px;
+}
+.page-header h1 {
+  font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;
+  display: flex; align-items: center; gap: 10px;
+}
+.page-header p {
+  font-size: 0.82rem; color: var(--text-tertiary); margin-top: 4px;
+}
+
+/* ── Stats Grid ────────────────────────── */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); padding: 14px 16px;
+  transition: all 0.35s ease;
+}
+.stat-card:hover { border-color: var(--border); }
+[data-theme="light"] .stat-card { box-shadow: var(--shadow-sm); }
+.stat-label {
+  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-tertiary); margin-bottom: 4px; font-weight: 600;
+}
+.stat-value {
+  font-size: 1.5rem; font-weight: 800; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.stat-value.accent { color: var(--accent); }
+.stat-value.success { color: var(--success); }
+.stat-value.info { color: var(--info); }
+.stat-sub { font-size: 0.7rem; color: var(--text-tertiary); margin-top: 4px; }
+
+/* ── Controls Bar ──────────────────────── */
+.controls {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 16px; padding: 12px 16px;
+  background: var(--surface); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+.control-group { display: flex; align-items: center; gap: 6px; }
+.control-label {
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-tertiary);
+}
+.control-select {
+  padding: 6px 10px; border-radius: var(--radius-sm);
+  background: var(--bg-primary); border: 1px solid var(--border-subtle);
+  color: var(--text-primary); font-family: var(--font-sans);
+  font-size: 0.8rem; cursor: pointer;
+}
+.control-select:focus { border-color: var(--accent); outline: none; }
+.control-checkbox {
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  font-size: 0.75rem; color: var(--text-secondary);
+}
+.control-checkbox input {
+  cursor: pointer;
+}
+
+/* ── Timeline ──────────────────────────── */
+.timeline-container {
+  background: var(--surface); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px;
+}
+.timeline-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-subtle);
+}
+.timeline-title {
+  font-size: 0.85rem; font-weight: 700; color: var(--text-primary);
+  display: flex; align-items: center; gap: 6px;
+}
+.timeline-subtitle {
+  font-size: 0.7rem; color: var(--text-tertiary);
+}
+.timeline {
+  height: 60px; position: relative; background: var(--bg-primary);
+  border-radius: var(--radius-sm); overflow: hidden;
+}
+.timeline-hour-markers {
+  display: flex; justify-content: space-between; padding: 0 4px;
+  margin-top: 4px;
+}
+.timeline-hour-marker {
+  font-size: 0.65rem; color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+.timeline-job {
+  position: absolute; height: 20px; border-radius: 4px;
+  display: flex; align-items: center; padding: 0 6px; gap: 4px;
+  font-size: 0.65rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; white-space: nowrap; overflow: hidden;
+  border: 1px solid transparent;
+}
+.timeline-job:hover {
+  transform: translateY(-2px); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+.timeline-job .emoji { font-size: 0.8rem; }
+.timeline-job .name {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ── Job Cards ─────────────────────────── */
+.jobs-container {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.job-card {
+  background: var(--surface); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); padding: 14px 16px;
+  transition: all 0.35s ease; cursor: pointer;
+}
+.job-card:hover { border-color: var(--border); }
+[data-theme="light"] .job-card { box-shadow: var(--shadow-sm); }
+.job-card.expanded { border-color: var(--accent); }
+
+.job-header {
+  display: flex; align-items: center; gap: 12px;
+}
+.job-agent {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.85rem; font-weight: 600; color: var(--text-primary);
+  min-width: 120px;
+}
+.job-agent .emoji { font-size: 1.2rem; }
+.job-main {
+  flex: 1; display: flex; flex-direction: column; gap: 4px;
+}
+.job-name {
+  font-size: 0.9rem; font-weight: 700; color: var(--text-primary);
+}
+.job-schedule {
+  font-size: 0.75rem; color: var(--text-secondary);
+}
+.job-schedule .cron-expr {
+  font-family: var(--font-mono); background: var(--bg-primary);
+  padding: 2px 6px; border-radius: 4px; margin-left: 6px;
+  color: var(--text-tertiary);
+}
+.job-meta {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.job-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 600;
+}
+.job-badge.enabled {
+  background: var(--success-bg); color: var(--success);
+}
+.job-badge.disabled {
+  background: var(--error-bg); color: var(--error);
+}
+.job-badge.ok {
+  background: var(--success-bg); color: var(--success);
+}
+.job-badge.error {
+  background: var(--error-bg); color: var(--error);
+}
+.job-stat {
+  font-size: 0.72rem; color: var(--text-tertiary);
+  display: flex; align-items: center; gap: 4px;
+}
+.job-stat strong {
+  color: var(--text-secondary); font-weight: 600;
+}
+
+.job-details {
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-subtle);
+  display: none;
+}
+.job-card.expanded .job-details {
+  display: block;
+}
+.job-detail-section {
+  margin-bottom: 12px;
+}
+.job-detail-label {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 4px;
+}
+.job-detail-value {
+  font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5;
+  background: var(--bg-primary); padding: 10px 12px;
+  border-radius: var(--radius-sm); white-space: pre-wrap; word-break: break-word;
+}
+
+/* ── Loading State ─────────────────────── */
+.loading-state {
+  text-align: center; padding: 40px 20px; color: var(--text-tertiary);
+}
+.loading-state .icon { font-size: 2rem; margin-bottom: 12px; opacity: 0.4; }
+.loading-state p { font-size: 0.85rem; }
+
+/* ── Empty State ───────────────────────── */
+.empty-state {
+  text-align: center; padding: 40px 20px; color: var(--text-secondary);
+}
+.empty-state .icon { font-size: 2rem; margin-bottom: 12px; opacity: 0.4; }
+.empty-state p { font-size: 0.85rem; }
+
+/* ── Responsive ────────────────────────── */
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .job-header { flex-direction: column; align-items: flex-start; }
+  .job-meta { width: 100%; }
+}
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.fade-up { animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+</style>
+</head>
+<body>
+
+<main class="main">
+  <div class="page-header fade-up">
+    <h1>⏰ Cron Jobs</h1>
+    <p>Scheduled tasks and automation across all agents</p>
+  </div>
+
+  <div class="stats-grid fade-up" style="animation-delay:.05s">
+    <div class="stat-card">
+      <div class="stat-label">Total Jobs</div>
+      <div class="stat-value info" id="statTotalJobs">—</div>
+      <div class="stat-sub" id="statJobsSub">Loading...</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Enabled</div>
+      <div class="stat-value success" id="statEnabledJobs">—</div>
+      <div class="stat-sub" id="statEnabledSub">Active jobs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Agents</div>
+      <div class="stat-value accent" id="statAgentCount">—</div>
+      <div class="stat-sub" id="statAgentsSub">With cron jobs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Next Run</div>
+      <div class="stat-value" id="statNextRun">—</div>
+      <div class="stat-sub" id="statNextRunSub">Upcoming</div>
+    </div>
+  </div>
+
+  <div class="controls fade-up" style="animation-delay:.1s">
+    <div class="control-group">
+      <span class="control-label">Agent</span>
+      <select class="control-select" id="agentFilter" onchange="applyFilters()">
+        <option value="all">All Agents</option>
+      </select>
+    </div>
+    <label class="control-checkbox">
+      <input type="checkbox" id="showDisabled" onchange="applyFilters()" checked>
+      <span>Show disabled jobs</span>
+    </label>
+  </div>
+
+  <div class="timeline-container fade-up" style="animation-delay:.15s" id="timelineContainer">
+    <div class="timeline-header">
+      <div class="timeline-title">
+        <i data-lucide="calendar-clock"></i>
+        Next 24 Hours
+      </div>
+      <div class="timeline-subtitle" id="timelineSubtitle">—</div>
+    </div>
+    <div class="timeline" id="timeline"></div>
+    <div class="timeline-hour-markers" id="timelineMarkers"></div>
+  </div>
+
+  <div class="jobs-container fade-up" style="animation-delay:.2s" id="jobsContainer">
+    <div class="loading-state">
+      <div class="icon">⏳</div>
+      <p>Loading cron jobs...</p>
+    </div>
+  </div>
+
+</main>
+
+<script src="/layout.js"></script>
+<script>
+'use strict';
+
+const $ = s => document.querySelector(s);
+let cronData = [];
+let filteredJobs = [];
+let refreshInterval = null;
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+
+document.addEventListener('layout:snapshot', () => {
+  populateAgentFilter();
+  loadCrons();
+});
+
+// Also load immediately — don't wait for SSE snapshot
+setTimeout(() => {
+  if (cronData.length === 0) loadCrons();
+}, 500);
+
+// Auto-refresh every 30 seconds
+refreshInterval = setInterval(() => {
+  loadCrons(true); // silent refresh
+}, 30000);
+
+function populateAgentFilter() {
+  const select = $('#agentFilter');
+  const ids = Object.keys(agentState).sort();
+  const agentOptions = ids.map(id => {
+    const a = agentState[id];
+    return `<option value="${id}">${a.emoji || '🤖'} ${a.name || id}</option>`;
+  }).join('');
+  const currentValue = select.value;
+  select.innerHTML = '<option value="all">All Agents</option>' + agentOptions;
+  select.value = currentValue; // restore selection
+}
+
+// ═══════════════════════════════════════════
+// LOAD CRON DATA
+// ═══════════════════════════════════════════
+
+async function loadCrons(silent = false) {
+  try {
+    const res = await fetch('/api/crons');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    cronData = await res.json();
+    
+    // Enrich with agent info
+    cronData = cronData.map(job => {
+      const agentInfo = agentState[job.agentId] || {};
+      return {
+        ...job,
+        agentName: agentInfo.name || job.agentId,
+        agentEmoji: agentInfo.emoji || '🤖',
+      };
+    });
+
+    applyFilters();
+    if (!silent) renderAll();
+    else updateDynamicContent(); // only update time-sensitive parts
+  } catch (e) {
+    console.error('Failed to load crons:', e);
+    if (!silent) {
+      const container = $('#jobsContainer');
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">⚠️</div>
+          <p>Failed to load cron jobs: ${e.message}</p>
+        </div>
+      `;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════
+// FILTERS
+// ═══════════════════════════════════════════
+
+function applyFilters() {
+  const agentFilter = $('#agentFilter').value;
+  const showDisabled = $('#showDisabled').checked;
+
+  filteredJobs = cronData.filter(job => {
+    if (agentFilter !== 'all' && job.agentId !== agentFilter) return false;
+    if (!showDisabled && !job.enabled) return false;
+    return true;
+  });
+
+  renderAll();
+}
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+
+function renderAll() {
+  renderStats();
+  renderTimeline();
+  renderJobs();
+  refreshIcons();
+}
+
+function updateDynamicContent() {
+  // Update only time-sensitive content (for silent refresh)
+  updateNextRunTimes();
+  renderTimeline();
+}
+
+function renderStats() {
+  const total = cronData.length;
+  const enabled = cronData.filter(j => j.enabled).length;
+  const agents = new Set(cronData.map(j => j.agentId)).size;
+
+  $('#statTotalJobs').textContent = total;
+  $('#statJobsSub').textContent = `${cronData.length} scheduled`;
+
+  $('#statEnabledJobs').textContent = enabled;
+  $('#statEnabledSub').textContent = `${total - enabled} disabled`;
+
+  $('#statAgentCount').textContent = agents;
+  $('#statAgentsSub').textContent = agents === 1 ? '1 agent' : `${agents} agents`;
+
+  // Find next upcoming job
+  const now = Date.now();
+  const upcoming = cronData
+    .filter(j => j.enabled && j.state?.nextRunAtMs && j.state.nextRunAtMs > now)
+    .sort((a, b) => a.state.nextRunAtMs - b.state.nextRunAtMs);
+
+  if (upcoming.length > 0) {
+    const next = upcoming[0];
+    $('#statNextRun').textContent = timeAgo(next.state.nextRunAtMs, true);
+    $('#statNextRunSub').textContent = `${next.agentEmoji} ${next.name}`;
+  } else {
+    $('#statNextRun').textContent = '—';
+    $('#statNextRunSub').textContent = 'No upcoming jobs';
+  }
+}
+
+function renderTimeline() {
+  const timeline = $('#timeline');
+  const markers = $('#timelineMarkers');
+  const subtitle = $('#timelineSubtitle');
+  const container = $('#timelineContainer');
+
+  const now = Date.now();
+  const end24h = now + 24 * 3600000;
+
+  // Get jobs scheduled in next 24h
+  const upcomingJobs = cronData
+    .filter(j => j.enabled && j.state?.nextRunAtMs && j.state.nextRunAtMs >= now && j.state.nextRunAtMs <= end24h)
+    .sort((a, b) => a.state.nextRunAtMs - b.state.nextRunAtMs);
+
+  if (upcomingJobs.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+  container.style.display = 'block';
+
+  subtitle.textContent = `${upcomingJobs.length} job${upcomingJobs.length === 1 ? '' : 's'} scheduled`;
+
+  // Clear timeline
+  timeline.innerHTML = '';
+
+  // Generate hour markers (24 hours, show every 3 hours)
+  markers.innerHTML = '';
+  for (let i = 0; i <= 24; i += 3) {
+    const hour = new Date(now + i * 3600000).getHours();
+    const marker = document.createElement('div');
+    marker.className = 'timeline-hour-marker';
+    marker.textContent = `${hour.toString().padStart(2, '0')}:00`;
+    markers.appendChild(marker);
+  }
+
+  // Colors for agents
+  const agentColors = generateAgentColors(upcomingJobs);
+
+  // Plot jobs on timeline
+  let lastY = 5; // vertical stacking
+  upcomingJobs.forEach((job, idx) => {
+    const timeOffset = job.state.nextRunAtMs - now;
+    const leftPercent = (timeOffset / (24 * 3600000)) * 100;
+
+    const jobEl = document.createElement('div');
+    jobEl.className = 'timeline-job';
+    jobEl.style.left = `${leftPercent}%`;
+    jobEl.style.top = `${lastY}px`;
+    jobEl.style.background = agentColors[job.agentId] || 'var(--accent)';
+    jobEl.style.color = 'var(--bg-primary)';
+    jobEl.innerHTML = `
+      <span class="emoji">${job.agentEmoji}</span>
+      <span class="name">${truncate(job.name, 15)}</span>
+    `;
+    jobEl.title = `${job.agentName}: ${job.name} at ${new Date(job.state.nextRunAtMs).toLocaleTimeString()}`;
+    jobEl.onclick = () => scrollToJob(job.id);
+
+    timeline.appendChild(jobEl);
+
+    // Stagger vertically to avoid overlap
+    lastY += 25;
+    if (lastY > 35) lastY = 5;
+  });
+}
+
+function renderJobs() {
+  const container = $('#jobsContainer');
+
+  if (filteredJobs.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <p>No cron jobs found</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Sort: enabled first, then by next run time
+  const sorted = [...filteredJobs].sort((a, b) => {
+    if (a.enabled !== b.enabled) return b.enabled - a.enabled;
+    if (a.state?.nextRunAtMs && b.state?.nextRunAtMs) {
+      return a.state.nextRunAtMs - b.state.nextRunAtMs;
+    }
+    return 0;
+  });
+
+  container.innerHTML = sorted.map(job => {
+    const schedule = cronToHuman(job.schedule?.expr || '');
+    const nextRun = job.state?.nextRunAtMs ? timeAgo(job.state.nextRunAtMs, true) : '—';
+    const lastRun = job.state?.lastRunAtMs ? timeAgo(job.state.lastRunAtMs) : 'Never';
+    const lastStatus = job.state?.lastStatus || 'unknown';
+    const lastDuration = job.state?.lastDurationMs ? formatDuration(job.state.lastDurationMs) : '—';
+
+    return `
+      <div class="job-card" id="job-${job.id}" onclick="toggleJob('${job.id}')">
+        <div class="job-header">
+          <div class="job-agent">
+            <span class="emoji">${job.agentEmoji}</span>
+            <span>${job.agentName}</span>
+          </div>
+          <div class="job-main">
+            <div class="job-name">${escapeHtml(job.name)}</div>
+            <div class="job-schedule">
+              ${schedule}
+              <span class="cron-expr">${job.schedule?.expr || ''}</span>
+            </div>
+          </div>
+          <div class="job-meta">
+            <span class="job-badge ${job.enabled ? 'enabled' : 'disabled'}">
+              <i data-lucide="${job.enabled ? 'check-circle' : 'x-circle'}" style="width:12px;height:12px"></i>
+              ${job.enabled ? 'Enabled' : 'Disabled'}
+            </span>
+            ${job.enabled ? `
+              <span class="job-stat">
+                <i data-lucide="clock" style="width:12px;height:12px"></i>
+                <strong>${nextRun}</strong>
+              </span>
+            ` : ''}
+            <span class="job-stat">
+              <i data-lucide="history" style="width:12px;height:12px"></i>
+              ${lastRun}
+            </span>
+            ${lastStatus !== 'unknown' ? `
+              <span class="job-badge ${lastStatus === 'ok' ? 'ok' : 'error'}">
+                ${lastStatus}
+              </span>
+            ` : ''}
+            ${lastDuration !== '—' ? `
+              <span class="job-stat">
+                <i data-lucide="timer" style="width:12px;height:12px"></i>
+                ${lastDuration}
+              </span>
+            ` : ''}
+          </div>
+        </div>
+        <div class="job-details">
+          <div class="job-detail-section">
+            <div class="job-detail-label">Schedule</div>
+            <div class="job-detail-value">
+              Expression: <strong>${job.schedule?.expr || 'N/A'}</strong><br>
+              Kind: ${job.schedule?.kind || 'unknown'}<br>
+              ${job.state?.nextRunAtMs ? `Next run: <strong>${new Date(job.state.nextRunAtMs).toLocaleString()}</strong>` : ''}
+            </div>
+          </div>
+          ${job.payload?.text ? `
+            <div class="job-detail-section">
+              <div class="job-detail-label">Instruction</div>
+              <div class="job-detail-value">${escapeHtml(job.payload.text)}</div>
+            </div>
+          ` : ''}
+          <div class="job-detail-section">
+            <div class="job-detail-label">Job ID</div>
+            <div class="job-detail-value"><code>${job.id}</code></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  refreshIcons();
+}
+
+function updateNextRunTimes() {
+  // Update "next run" times without re-rendering entire page
+  filteredJobs.forEach(job => {
+    const card = document.getElementById(`job-${job.id}`);
+    if (!card || !job.enabled || !job.state?.nextRunAtMs) return;
+
+    const nextRunEl = card.querySelector('.job-stat strong');
+    if (nextRunEl) {
+      nextRunEl.textContent = timeAgo(job.state.nextRunAtMs, true);
+    }
+  });
+
+  // Also update stat card
+  const now = Date.now();
+  const upcoming = cronData
+    .filter(j => j.enabled && j.state?.nextRunAtMs && j.state.nextRunAtMs > now)
+    .sort((a, b) => a.state.nextRunAtMs - b.state.nextRunAtMs);
+
+  if (upcoming.length > 0) {
+    const next = upcoming[0];
+    $('#statNextRun').textContent = timeAgo(next.state.nextRunAtMs, true);
+  }
+}
+
+function toggleJob(jobId) {
+  const card = document.getElementById(`job-${jobId}`);
+  if (card) {
+    card.classList.toggle('expanded');
+    refreshIcons();
+  }
+}
+
+function scrollToJob(jobId) {
+  const card = document.getElementById(`job-${jobId}`);
+  if (card) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.classList.add('expanded');
+    setTimeout(() => refreshIcons(), 100);
+  }
+}
+
+// ═══════════════════════════════════════════
+// CRON EXPRESSION TO HUMAN READABLE
+// ═══════════════════════════════════════════
+
+function cronToHuman(expr) {
+  if (!expr) return 'Unknown schedule';
+
+  const parts = expr.split(' ');
+  if (parts.length < 5) return expr;
+
+  const [min, hour, dom, mon, dow] = parts;
+
+  // Daily patterns
+  if (dom === '*' && mon === '*' && dow === '*') {
+    if (hour !== '*' && min !== '*') {
+      return `Daily at ${hour.padStart(2, '0')}:${min.padStart(2, '0')}`;
+    }
+  }
+
+  // Weekly patterns
+  if (dom === '*' && mon === '*' && dow !== '*' && hour !== '*' && min !== '*') {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayName = days[parseInt(dow)] || `day ${dow}`;
+    return `${dayName}s at ${hour.padStart(2, '0')}:${min.padStart(2, '0')}`;
+  }
+
+  // Hourly patterns
+  if (hour === '*' && min !== '*') {
+    return `Every hour at :${min.padStart(2, '0')}`;
+  }
+
+  // Every N minutes
+  if (min.startsWith('*/') && hour === '*') {
+    const interval = min.substring(2);
+    return `Every ${interval} minutes`;
+  }
+
+  // Fallback to raw expression
+  return expr;
+}
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+
+function timeAgo(ts, future = false) {
+  const d = ts - Date.now();
+  const abs = Math.abs(d);
+
+  if (abs < 60000) return future ? 'in <1m' : 'just now';
+  if (abs < 3600000) {
+    const m = Math.floor(abs / 60000);
+    return future ? `in ${m}m` : `${m}m ago`;
+  }
+  if (abs < 86400000) {
+    const h = Math.floor(abs / 3600000);
+    const m = Math.floor((abs % 3600000) / 60000);
+    return future ? `in ${h}h ${m}m` : `${h}h ago`;
+  }
+  const days = Math.floor(abs / 86400000);
+  return future ? `in ${days}d` : `${days}d ago`;
+}
+
+function formatDuration(ms) {
+  if (ms < 1000) return `${ms}ms`;
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return `${m}m ${s}s`;
+}
+
+function truncate(str, max) {
+  if (str.length <= max) return str;
+  return str.slice(0, max - 1) + '…';
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function generateAgentColors(jobs) {
+  const agentIds = [...new Set(jobs.map(j => j.agentId))];
+  const colors = [
+    '#3b82f6', '#22c55e', '#c9a44a', '#ef4444', '#8b5cf6', 
+    '#f59e0b', '#06b6d4', '#ec4899', '#10b981', '#f97316'
+  ];
+  const colorMap = {};
+  agentIds.forEach((id, idx) => {
+    colorMap[id] = colors[idx % colors.length];
+  });
+  return colorMap;
+}
+
+</script>
+<script src="/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>
