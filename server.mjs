@@ -436,7 +436,7 @@ function getAnalytics(rangeStr, agentFilter) {
 
                 // Check timestamp
                 const ts = data.timestamp || msg.timestamp;
-                if (ts && ts < cutoffDate) continue;
+                if (ts && new Date(ts).getTime() < cutoffDate) continue;
 
                 // Track costs
                 const cost = usage.cost?.total || 0;
@@ -617,7 +617,7 @@ function getTokenAnalytics(rangeStr, agentFilter) {
 
                 // Check timestamp
                 const ts = data.timestamp || msg.timestamp;
-                if (ts && ts < cutoffDate) continue;
+                if (ts && new Date(ts).getTime() < cutoffDate) continue;
 
                 // Extract token counts
                 const cost = usage.cost?.total || 0;
