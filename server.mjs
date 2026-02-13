@@ -352,8 +352,30 @@ function getAgentDetail(agentId) {
 // ── Analytics Aggregator ────────────────────────────
 import { homedir } from 'os';
 
+// Helper: Discover agent instances from ~/.openclaw-{agentId} directories
+function discoverAgentInstances() {
+  const homeDir = homedir();
+  const agentMap = new Map(); // agentId -> sessionDir
+  
+  try {
+    const entries = readdirSync(homeDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory() && entry.name.startsWith('.openclaw-')) {
+        const agentId = entry.name.replace('.openclaw-', '');
+        const sessionDir = join(homeDir, entry.name, 'agents', 'main', 'sessions');
+        if (existsSync(sessionDir)) {
+          agentMap.set(agentId, sessionDir);
+        }
+      }
+    }
+  } catch (e) {
+    // Ignore errors
+  }
+  
+  return agentMap;
+}
+
 function getAnalytics(rangeStr, agentFilter) {
-  const AGENTS_DIR = join(homedir(), '.openclaw', 'agents');
   const range = rangeStr === 'all' ? Infinity : parseInt(rangeStr);
   const cutoffDate = rangeStr === 'all' ? 0 : Date.now() - (range * 86400000);
 
@@ -370,24 +392,16 @@ function getAnalytics(rangeStr, agentFilter) {
   const byModel = new Map(); // model -> {cost, tokens}
   const sessions = []; // [{agentId, sessionId, cost, tokens}]
 
-  // Discover all agents
-  let agentIds = [];
-  try {
-    agentIds = readdirSync(AGENTS_DIR, { withFileTypes: true })
-      .filter(d => d.isDirectory())
-      .map(d => d.name);
-  } catch {
-    // No agents dir
-  }
-
+  // Discover all agents from ~/.openclaw-{agentId}/agents/main/sessions/
+  const agentMap = discoverAgentInstances();
+  
   // Filter agents if needed
-  if (agentFilter !== 'all') {
-    agentIds = agentIds.filter(id => id === agentFilter);
-  }
+  const agentEntries = agentFilter === 'all' 
+    ? Array.from(agentMap.entries())
+    : Array.from(agentMap.entries()).filter(([id]) => id === agentFilter);
 
   // Parse sessions for each agent
-  for (const agentId of agentIds) {
-    const sessDir = join(AGENTS_DIR, agentId, 'sessions');
+  for (const [agentId, sessDir] of agentEntries) {
     if (!existsSync(sessDir)) continue;
 
     try {
@@ -549,7 +563,6 @@ function getAnalytics(rangeStr, agentFilter) {
 
 // ── Token Analytics (granular breakdown by day and agent) ──
 function getTokenAnalytics(rangeStr, agentFilter) {
-  const AGENTS_DIR = join(homedir(), '.openclaw', 'agents');
   const range = rangeStr === 'all' ? Infinity : parseInt(rangeStr);
   const cutoffDate = rangeStr === 'all' ? 0 : Date.now() - (range * 86400000);
 
@@ -565,24 +578,16 @@ function getTokenAnalytics(rangeStr, agentFilter) {
   const byAgent = new Map(); // agentId -> {inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens, cost}
   const byDate = new Map(); // date -> {inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens, cost}
 
-  // Discover all agents
-  let agentIds = [];
-  try {
-    agentIds = readdirSync(AGENTS_DIR, { withFileTypes: true })
-      .filter(d => d.isDirectory())
-      .map(d => d.name);
-  } catch {
-    // No agents dir
-  }
-
+  // Discover all agents from ~/.openclaw-{agentId}/agents/main/sessions/
+  const agentMap = discoverAgentInstances();
+  
   // Filter agents if needed
-  if (agentFilter !== 'all') {
-    agentIds = agentIds.filter(id => id === agentFilter);
-  }
+  const agentEntries = agentFilter === 'all' 
+    ? Array.from(agentMap.entries())
+    : Array.from(agentMap.entries()).filter(([id]) => id === agentFilter);
 
   // Parse sessions for each agent
-  for (const agentId of agentIds) {
-    const sessDir = join(AGENTS_DIR, agentId, 'sessions');
+  for (const [agentId, sessDir] of agentEntries) {
     if (!existsSync(sessDir)) continue;
 
     try {
@@ -709,41 +714,33 @@ function getTokenAnalytics(rangeStr, agentFilter) {
 // ── Session Trace (for waterfall view) ─────────────
 
 function getAllSessions() {
-  const AGENTS_DIR = join(homedir(), '.openclaw', 'agents');
   const sessions = [];
+  const agentMap = discoverAgentInstances();
 
-  try {
-    const agentIds = readdirSync(AGENTS_DIR, { withFileTypes: true })
-      .filter(d => d.isDirectory())
-      .map(d => d.name);
+  for (const [agentId, sessDir] of agentMap.entries()) {
+    const sessionsPath = join(sessDir, 'sessions.json');
+    if (!existsSync(sessionsPath)) continue;
 
-    for (const agentId of agentIds) {
-      const sessionsPath = join(AGENTS_DIR, agentId, 'sessions', 'sessions.json');
-      if (!existsSync(sessionsPath)) continue;
-
-      try {
-        const sessData = JSON.parse(readFileSync(sessionsPath, 'utf8'));
-        for (const [key, sess] of Object.entries(sessData)) {
-          if (!sess.sessionFile) continue;
-          
-          const agentInfo = collector.state.get(agentId) || {};
-          sessions.push({
-            key,
-            agentId,
-            agentName: agentInfo.name || agentId,
-            agentEmoji: agentInfo.emoji || '🤖',
-            sessionId: sess.sessionId,
-            displayName: sess.displayName || key.split(':').pop() || key,
-            updatedAt: sess.updatedAt,
-            sessionFile: sess.sessionFile,
-          });
-        }
-      } catch {
-        // Skip malformed sessions.json
+    try {
+      const sessData = JSON.parse(readFileSync(sessionsPath, 'utf8'));
+      for (const [key, sess] of Object.entries(sessData)) {
+        if (!sess.sessionFile) continue;
+        
+        const agentInfo = collector.state.get(agentId) || {};
+        sessions.push({
+          key,
+          agentId,
+          agentName: agentInfo.name || agentId,
+          agentEmoji: agentInfo.emoji || '🤖',
+          sessionId: sess.sessionId,
+          displayName: sess.displayName || key.split(':').pop() || key,
+          updatedAt: sess.updatedAt,
+          sessionFile: sess.sessionFile,
+        });
       }
+    } catch {
+      // Skip malformed sessions.json
     }
-  } catch {
-    // No agents dir
   }
 
   // Sort by most recent first
@@ -752,32 +749,23 @@ function getAllSessions() {
 }
 
 function getSessionTrace(sessionKey) {
-  const AGENTS_DIR = join(homedir(), '.openclaw', 'agents');
-  
   // Find the session file
   let sessionFile = null;
   let agentId = null;
+  const agentMap = discoverAgentInstances();
 
-  try {
-    const agentIds = readdirSync(AGENTS_DIR, { withFileTypes: true })
-      .filter(d => d.isDirectory())
-      .map(d => d.name);
+  for (const [aid, sessDir] of agentMap.entries()) {
+    const sessionsPath = join(sessDir, 'sessions.json');
+    if (!existsSync(sessionsPath)) continue;
 
-    for (const aid of agentIds) {
-      const sessionsPath = join(AGENTS_DIR, aid, 'sessions', 'sessions.json');
-      if (!existsSync(sessionsPath)) continue;
-
-      try {
-        const sessData = JSON.parse(readFileSync(sessionsPath, 'utf8'));
-        if (sessData[sessionKey]) {
-          sessionFile = sessData[sessionKey].sessionFile;
-          agentId = aid;
-          break;
-        }
-      } catch {}
-    }
-  } catch {
-    return null;
+    try {
+      const sessData = JSON.parse(readFileSync(sessionsPath, 'utf8'));
+      if (sessData[sessionKey]) {
+        sessionFile = sessData[sessionKey].sessionFile;
+        agentId = aid;
+        break;
+      }
+    } catch {}
   }
 
   if (!sessionFile || !existsSync(sessionFile)) return null;
@@ -916,22 +904,17 @@ function getSessionTrace(sessionKey) {
 // ── Traces (delegation trees) ──────────────────────
 
 function getTraces() {
-  const AGENTS_DIR = join(homedir(), '.openclaw', 'agents');
   const traces = [];
   const sessionMap = new Map(); // sessionKey -> session metadata
+  const agentMap = discoverAgentInstances();
 
-  try {
-    const agentIds = readdirSync(AGENTS_DIR, { withFileTypes: true })
-      .filter(d => d.isDirectory())
-      .map(d => d.name);
+  // First pass: collect all sessions
+  for (const [agentId, sessDir] of agentMap.entries()) {
+    const sessionsPath = join(sessDir, 'sessions.json');
+    if (!existsSync(sessionsPath)) continue;
 
-    // First pass: collect all sessions
-    for (const agentId of agentIds) {
-      const sessionsPath = join(AGENTS_DIR, agentId, 'sessions', 'sessions.json');
-      if (!existsSync(sessionsPath)) continue;
-
-      try {
-        const sessData = JSON.parse(readFileSync(sessionsPath, 'utf8'));
+    try {
+      const sessData = JSON.parse(readFileSync(sessionsPath, 'utf8'));
         for (const [key, sess] of Object.entries(sessData)) {
           if (!sess.sessionFile) continue;
 
@@ -1008,11 +991,11 @@ function getTraces() {
           });
         }
       } catch {}
-    }
+  }
 
-    // Second pass: build tree structure
-    const rootSessions = [];
-    for (const [key, sess] of sessionMap.entries()) {
+  // Second pass: build tree structure
+  const rootSessions = [];
+  for (const [key, sess] of sessionMap.entries()) {
       if (sess.isMain) {
         rootSessions.push(sess);
       } else if (sess.parentKey) {
@@ -1044,23 +1027,19 @@ function getTraces() {
       }
     }
 
-    for (const root of rootSessions) {
-      calculateDepth(root);
-    }
-
-    return {
-      traces: rootSessions,
-      summary: {
-        totalSessions,
-        totalSubagents,
-        totalCost: Math.round(totalCost * 10000) / 10000,
-        maxDepth,
-      },
-    };
-  } catch (e) {
-    console.error('getTraces error:', e);
-    return { traces: [], summary: { totalSessions: 0, totalSubagents: 0, totalCost: 0, maxDepth: 0 } };
+  for (const root of rootSessions) {
+    calculateDepth(root);
   }
+
+  return {
+    traces: rootSessions,
+    summary: {
+      totalSessions,
+      totalSubagents,
+      totalCost: Math.round(totalCost * 10000) / 10000,
+      maxDepth,
+    },
+  };
 }
 
 // ── HTTP Server ─────────────────────────────────────

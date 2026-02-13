@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Clawd Control — Agent Collector
+ * Ven Agents — Agent Collector
  * 
  * Connects to each agent's Clawdbot gateway via the native WS protocol,
  * polls status data, and exposes an event emitter for the server.
