@@ -353,19 +353,45 @@ function getAgentDetail(agentId) {
 import { homedir } from 'os';
 
 // Helper: Discover agent instances from ~/.openclaw-{agentId} directories
+// Skips inactive agents (modified >48h ago) and archive directories
 function discoverAgentInstances() {
   const homeDir = homedir();
   const agentMap = new Map(); // agentId -> sessionDir
+  const cutoffTime = Date.now() - (48 * 3600 * 1000); // 48 hours ago
+  
+  // Skip list: old/inactive/renamed agents or sub-agents tracked under parent
+  const skipList = [
+    'archive',
+    'max',                      // Renamed to charlie
+    'ven-marketing-monitor',    // Inactive
+    'mission-control-ops',      // Sub-agent inside Brian
+    'mission-control-sales'     // Sub-agent inside Brian
+  ];
   
   try {
     const entries = readdirSync(homeDir, { withFileTypes: true });
     for (const entry of entries) {
       if (entry.isDirectory() && entry.name.startsWith('.openclaw-')) {
         const agentId = entry.name.replace('.openclaw-', '');
-        const sessionDir = join(homeDir, entry.name, 'agents', 'main', 'sessions');
-        if (existsSync(sessionDir)) {
-          agentMap.set(agentId, sessionDir);
+        
+        // Skip known old/inactive directories
+        if (skipList.includes(agentId)) continue;
+        
+        const agentDir = join(homeDir, entry.name);
+        const sessionDir = join(agentDir, 'agents', 'main', 'sessions');
+        
+        // Check if sessions directory exists
+        if (!existsSync(sessionDir)) continue;
+        
+        // Check last modified time - skip if too old
+        try {
+          const stat = statSync(agentDir);
+          if (stat.mtimeMs < cutoffTime) continue;
+        } catch {
+          continue;
         }
+        
+        agentMap.set(agentId, sessionDir);
       }
     }
   } catch (e) {

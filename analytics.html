@@ -365,11 +365,22 @@ setTimeout(() => {
 
 function populateAgentSelect() {
   const select = $('#agentSelect');
-  const ids = Object.keys(agentState).sort();
+  
+  // First try from agentState (live SSE data)
+  let ids = Object.keys(agentState).sort();
+  
+  // Fallback: use analyticsData if available
+  if (ids.length === 0 && analyticsData && analyticsData.byAgent) {
+    ids = analyticsData.byAgent.map(a => a.agentId).sort();
+  }
+  
   const agentOptions = ids.map(id => {
-    const a = agentState[id];
-    return `<option value="${id}">${a.emoji || '🤖'} ${a.name || id}</option>`;
+    const a = agentState[id] || {};
+    const emoji = a.emoji || '🤖';
+    const name = a.name || id.charAt(0).toUpperCase() + id.slice(1);
+    return `<option value="${id}">${emoji} ${name}</option>`;
   }).join('');
+  
   select.innerHTML = '<option value="all">All Agents</option>' + agentOptions;
 }
 
@@ -384,6 +395,12 @@ async function loadAnalytics() {
   try {
     const res = await fetch(`/api/analytics?range=${range}&agent=${agent}`);
     analyticsData = await res.json();
+    
+    // Populate agent dropdown if it's empty (fallback for when SSE hasn't loaded)
+    if ($('#agentSelect').options.length <= 1) {
+      populateAgentSelect();
+    }
+    
     renderAll();
   } catch (e) {
     console.error('Failed to load analytics:', e);
