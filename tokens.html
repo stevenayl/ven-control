@@ -365,9 +365,12 @@ function populateAgentSelect() {
 async function loadTokens() {
   const range = $('#rangeSelect').value;
   const agent = $('#agentSelect').value;
+  
+  // Format range parameter (add 'd' suffix for days, unless 'all')
+  const rangeParam = range === 'all' ? 'all' : `${range}d`;
 
   try {
-    const res = await fetch(`/api/tokens?range=${range}&agent=${agent}`);
+    const res = await fetch(`/api/tokens?range=${rangeParam}&agent=${agent}`);
     tokenData = await res.json();
     
     // Populate agent dropdown if it's empty (fallback for when SSE hasn't loaded)
