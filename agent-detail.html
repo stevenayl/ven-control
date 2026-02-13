@@ -405,7 +405,7 @@ function render() {
       <div class="hero-meta">
         <span class="tag ${online ? 'tag-online' : 'tag-offline'}">${online ? '● Online' : '○ Offline'}</span>
         ${(live.health?.config?.defaultModel || cfg.model) ? `<span class="tag tag-model">${(live.health?.config?.defaultModel || cfg.model).replace('anthropic/', '')}</span>` : ''}
-        <span class="tag tag-machine">${cfg.machine}</span>
+        ${cfg.machine ? `<span class="tag tag-machine">${cfg.machine}</span>` : ''}
         <span style="color:var(--text-tertiary)">${cfg.workspace}</span>
       </div>
     </div>
