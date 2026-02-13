@@ -139,7 +139,7 @@
   /* Summary Grid */
   .summary-grid { 
     display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+    grid-template-columns: repeat(5, 1fr); 
     gap: 16px; 
     margin-bottom: 24px; 
   }
@@ -354,8 +354,11 @@
     }
     .hero-emoji { font-size: 2.5rem; }
     .container { padding: 20px; }
-    .summary-grid { grid-template-columns: 1fr 1fr; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
     .tabs { overflow-x: auto; }
+  }
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .summary-grid { grid-template-columns: repeat(3, 1fr); }
   }
 </style>
 </head>
@@ -465,11 +468,17 @@ function renderOverview() {
     }
   }
 
-  // Count tasks
+  // Count tasks - check for TASKS.md or cron jobs
   let taskCounts = { inbox: 0, progress: 0, done: 0 };
   if (ws.tasks) {
+    // Count from TASKS.md if it exists
     taskCounts.inbox = (ws.tasks.match(/- \[ \]/g) || []).length;
     taskCounts.done = (ws.tasks.match(/- \[x\]/gi) || []).length;
+  } else if (live.health?.crons) {
+    // Fall back to counting cron jobs if no TASKS.md
+    const crons = live.health.crons || [];
+    taskCounts.inbox = crons.filter(c => !c.disabled && c.enabled !== false).length;
+    taskCounts.done = 0; // Cron jobs don't have a "done" state
   }
 
   return `
