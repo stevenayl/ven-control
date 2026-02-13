@@ -468,17 +468,24 @@ function renderOverview() {
     }
   }
 
-  // Count tasks - check for TASKS.md or cron jobs
+  // Count active sub-agents
+  const now = Date.now();
+  const activeSubagents = sessions.filter(s => {
+    const isSubagent = s.key && s.key.includes('subagent');
+    const isRecent = (now - (s.updatedAt || 0)) < 300000; // 5 mins
+    return isSubagent && isRecent;
+  });
+  
+  // Count tasks - use active sub-agents if no TASKS.md
   let taskCounts = { inbox: 0, progress: 0, done: 0 };
   if (ws.tasks) {
     // Count from TASKS.md if it exists
     taskCounts.inbox = (ws.tasks.match(/- \[ \]/g) || []).length;
     taskCounts.done = (ws.tasks.match(/- \[x\]/gi) || []).length;
-  } else if (live.cron?.jobs) {
-    // Fall back to counting cron jobs if no TASKS.md
-    const crons = live.cron.jobs || [];
-    taskCounts.inbox = crons.filter(c => !c.disabled && c.enabled !== false).length;
-    taskCounts.done = 0; // Cron jobs don't have a "done" state
+  } else {
+    // Show active sub-agents as "open tasks"
+    taskCounts.inbox = activeSubagents.length;
+    taskCounts.done = 0;
   }
 
   return `
@@ -592,12 +599,136 @@ function renderMemory() {
 
 function renderTasks() {
   const ws = data.workspace;
+  const live = data.live || {};
+  const sessions = live.sessions?.sessions || [];
+  const cron = live.cron || {};
+  
+  // Filter active subagents (updated in last 5 mins)
+  const now = Date.now();
+  const activeSubagents = sessions.filter(s => {
+    const isSubagent = s.key && s.key.includes('subagent');
+    const isRecent = (now - (s.updatedAt || 0)) < 300000; // 5 mins
+    return isSubagent && isRecent;
+  });
+  
+  // Completed subagents (updated 5-60 mins ago)
+  const completedSubagents = sessions.filter(s => {
+    const isSubagent = s.key && s.key.includes('subagent');
+    const age = now - (s.updatedAt || 0);
+    const isCompleted = age >= 300000 && age < 3600000; // 5 mins to 1 hour
+    return isSubagent && isCompleted && s.totalTokens > 0; // Only if they did work
+  }).slice(0, 10);
+  
+  // Cron jobs
+  const cronJobs = cron.jobs || [];
+  const activeCrons = cronJobs.filter(j => j.enabled !== false);
+
   return `
+    <!-- Active Sub-agents -->
     <div class="panel">
-      <h2><i data-lucide="clipboard-list"></i> TASKS.md</h2>
-      ${ws.tasks ? `<div class="md-content">${esc(ws.tasks)}</div>` : '<div class="empty">No tasks</div>'}
+      <h2><i data-lucide="loader-circle"></i> 🔄 Active Jobs ${activeSubagents.length > 0 ? `<span class="tag tag-online" style="margin-left:8px">${activeSubagents.length}</span>` : ''}</h2>
+      ${activeSubagents.length > 0 ? activeSubagents.map(s => {
+        const runtime = Math.round((now - (s.updatedAt || now)) / 1000);
+        const runtimeStr = runtime < 60 ? `${runtime}s` : `${Math.floor(runtime / 60)}m ${runtime % 60}s`;
+        const modelShort = (s.model || 'unknown').replace('anthropic/', '').replace('claude-', '').replace('-20250929', '');
+        const tokens = s.totalTokens || 0;
+        const cost = estimateCost(tokens, s.model);
+        
+        return `
+          <div class="session-row">
+            <div>
+              <span class="session-key" style="font-size:12px;color:var(--text-secondary)">${esc(s.key.split(':').pop())}</span>
+              <div style="font-size:13px;color:var(--text-primary);margin-top:4px">Task running...</div>
+            </div>
+            <div class="session-info">
+              <span><i data-lucide="clock"></i> ${runtimeStr}</span>
+              <span><i data-lucide="cpu"></i> ${modelShort}</span>
+              <span><i data-lucide="coins"></i> ${fmtNum(tokens)} tokens</span>
+              ${cost ? `<span>~$${cost.toFixed(3)}</span>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('') : '<div class="empty">No active sub-agents running</div>'}
     </div>
+
+    <!-- Recently Completed Sub-agents -->
+    <div class="panel">
+      <h2><i data-lucide="check-circle"></i> ✅ Recently Completed</h2>
+      ${completedSubagents.length > 0 ? completedSubagents.map(s => {
+        const age = now - (s.updatedAt || now);
+        const ageStr = age < 60000 ? `${Math.round(age/1000)}s ago` : `${Math.floor(age/60000)}m ago`;
+        const modelShort = (s.model || 'unknown').replace('anthropic/', '').replace('claude-', '').replace('-20250929', '');
+        const tokens = s.totalTokens || 0;
+        const cost = estimateCost(tokens, s.model);
+        
+        return `
+          <div class="session-row" style="opacity:0.8">
+            <div>
+              <span class="session-key" style="font-size:12px;color:var(--text-secondary)">${esc(s.key.split(':').pop())}</span>
+              <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px">Completed ${ageStr}</div>
+            </div>
+            <div class="session-info">
+              <span><i data-lucide="cpu"></i> ${modelShort}</span>
+              <span><i data-lucide="coins"></i> ${fmtNum(tokens)} tokens</span>
+              ${cost ? `<span>$${cost.toFixed(3)}</span>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('') : '<div class="empty">No recently completed sub-agents</div>'}
+    </div>
+
+    <!-- Scheduled Tasks (Cron) -->
+    <div class="panel">
+      <h2><i data-lucide="calendar-clock"></i> ⏰ Scheduled Tasks</h2>
+      ${activeCrons.length > 0 ? activeCrons.map(c => {
+        const nextRun = c.state?.nextRunAtMs ? new Date(c.state.nextRunAtMs) : null;
+        const lastRun = c.state?.lastRunAtMs ? new Date(c.state.lastRunAtMs) : null;
+        const lastStatus = c.state?.lastStatus;
+        const statusIcon = lastStatus === 'ok' ? '✅' : lastStatus === 'error' ? '❌' : '⏸️';
+        const schedule = c.schedule?.expr || 'unknown';
+        
+        return `
+          <div class="session-row">
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:14px;color:var(--text-primary);margin-bottom:4px">${esc(c.name)}</div>
+              <div style="font-size:12px;color:var(--text-secondary);font-family:monospace">${esc(schedule)}</div>
+            </div>
+            <div class="session-info" style="flex-direction:column;align-items:flex-end;gap:4px">
+              ${nextRun ? `<span style="font-size:12px"><i data-lucide="arrow-right"></i> Next: ${nextRun.toLocaleString('en-AU', {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span>` : ''}
+              ${lastRun ? `<span style="font-size:11px;color:var(--text-tertiary)"><i data-lucide="history"></i> Last: ${timeAgo(c.state.lastRunAtMs)} ${statusIcon}</span>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('') : '<div class="empty">No scheduled cron jobs</div>'}
+    </div>
+
+    <!-- TASKS.md (legacy) -->
+    ${ws.tasks ? `
+      <div class="panel">
+        <h2><i data-lucide="clipboard-list"></i> TASKS.md</h2>
+        <div class="md-content">${esc(ws.tasks)}</div>
+      </div>
+    ` : ''}
   `;
+}
+
+// Cost estimation helper
+function estimateCost(tokens, model) {
+  if (!tokens || !model) return null;
+  
+  // Rough estimates (input+output mixed, so we use a blended rate)
+  const rates = {
+    'claude-opus-4': 0.015 / 1000,      // ~$15/M blended
+    'claude-sonnet-4': 0.003 / 1000,    // ~$3/M blended
+    'claude-sonnet-3.5': 0.003 / 1000,
+    'claude-haiku': 0.0008 / 1000,
+  };
+  
+  for (const [key, rate] of Object.entries(rates)) {
+    if (model.includes(key)) return tokens * rate;
+  }
+  
+  return null; // Unknown model
 }
 
 function renderSessions() {
