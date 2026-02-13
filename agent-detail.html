@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agent Detail — Clawd Control</title>
+<title>Agent Detail — Ven Agents</title>
 <style>
 
   /* Hero Section */
@@ -74,6 +74,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
   }
   .tab:hover { color: var(--text-primary); }
   .tab.active { 
@@ -393,7 +394,7 @@ function render() {
   const online = live.online;
 
   // Hero
-  document.title = `${cfg.emoji} ${cfg.name} — Clawd Control`;
+  document.title = `${cfg.emoji} ${cfg.name} — Ven Agents`;
   document.getElementById('hero').innerHTML = `
     <div class="hero-emoji">${cfg.emoji}</div>
     <div class="hero-info">

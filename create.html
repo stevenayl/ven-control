@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Create Agent — Clawd Control</title>
+<title>Create Agent — Ven Agents</title>
 <style>
 
   /* Container */
@@ -677,7 +677,7 @@ window._createPage.skipTelegram = false;
         await new Promise(r => setTimeout(r, 500));
         document.getElementById('result-icon').textContent = d.emoji;
         document.getElementById('result-title').textContent = `${d.name} is alive!`;
-        document.getElementById('result-msg').textContent = result.message || 'Your agent is ready. Head back to Clawd Control to see them.';
+        document.getElementById('result-msg').textContent = result.message || 'Your agent is ready. Head back to Ven Agents to see them.';
         showStep('done');
       } else {
         addLog(`Error: ${result.error}`);

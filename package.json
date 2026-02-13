@@ -1,7 +1,7 @@
 {
   "name": "clawd-control",
   "version": "0.1.0",
-  "description": "Real-time dashboard for monitoring and managing Clawdbot AI agents",
+  "description": "Real-time dashboard for monitoring and managing OpenClaw AI agents",
   "type": "module",
   "main": "server.mjs",
   "bin": {
@@ -15,13 +15,13 @@
     "url": "https://github.com/Temaki-AI/clawd-control.git"
   },
   "keywords": [
-    "clawdbot",
+    "openclaw",
     "ai-agents",
     "dashboard",
     "monitoring",
     "agent-management"
   ],
-  "author": "Clawdbot Contributors",
+  "author": "OpenClaw Contributors",
   "license": "MIT",
   "dependencies": {
     "ws": "^8.19.0"

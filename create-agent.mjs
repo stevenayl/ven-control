@@ -3,7 +3,7 @@
  * 
  * Handles the full flow:
  *   1. Scaffold workspace files
- *   2. Register agent with clawdbot gateway
+ *   2. Register agent with openclaw gateway
  *   3. Bind Telegram channel (if token provided)
  *   4. Update agents.json for the dashboard
  *   5. Return step-by-step log
@@ -54,7 +54,7 @@ export async function createAgent({ name, emoji, soul, model, telegramToken }) {
 
   // Check if agent already exists
   try {
-    const existing = execFileSync('clawdbot', ['agents', 'list', '--json'], { encoding: 'utf8', stdio: 'pipe' });
+    const existing = execFileSync('openclaw', ['agents', 'list', '--json'], { encoding: 'utf8', stdio: 'pipe' });
     const agents = JSON.parse(existing);
     if (agents.some(a => a.id === id)) {
       return { ok: false, error: 'Agent already exists', steps: [`❌ Agent "${id}" already exists`] };
@@ -128,7 +128,7 @@ Each session, you wake up fresh. Your files *are* your memory. Read them. Update
 *${displayName}'s curated memories. Updated over time.*
 
 ## Born
-- Created on ${today} via Clawd Control
+- Created on ${today} via Ven Agents
 - Model: ${model}
 - Workspace: ~/clawd-agents/${id}`);
 
@@ -172,7 +172,7 @@ Welcome to existence, ${displayName}! ${emoji}
 4. Check TASKS.md — your first tasks are there
 5. Delete this file when you're done
 
-Created: ${today} via Clawd Control
+Created: ${today} via Ven Agents
 Model: ${model}`);
 
   writeIfMissing(join(workspace, '.gitignore'), `.credentials/
@@ -193,7 +193,7 @@ node_modules/`);
   // 3. Register with Clawdbot
   steps.push('🔗 Registering with gateway');
   try {
-    const output = execFileSync('clawdbot', ['agents', 'add', id, '--workspace', workspace, '--model', model, '--non-interactive', '--json'], { encoding: 'utf8', stdio: 'pipe' });
+    const output = execFileSync('openclaw', ['agents', 'add', id, '--workspace', workspace, '--model', model, '--non-interactive', '--json'], { encoding: 'utf8', stdio: 'pipe' });
     steps.push('✅ Agent registered');
   } catch (e) {
     steps.push(`⚠️ Registration warning: ${e.message.substring(0, 100)}`);
@@ -202,7 +202,7 @@ node_modules/`);
   // 4. Set identity
   steps.push(`${emoji} Setting identity`);
   try {
-    execFileSync('clawdbot', ['agents', 'set-identity', id, '--name', displayName, '--emoji', emoji], { encoding: 'utf8', stdio: 'pipe' });
+    execFileSync('openclaw', ['agents', 'set-identity', id, '--name', displayName, '--emoji', emoji], { encoding: 'utf8', stdio: 'pipe' });
   } catch {}
 
   // 5. Configure cross-agent spawning + Telegram binding (single config read/write)
@@ -247,11 +247,11 @@ node_modules/`);
     }
 
     // Apply config patch via gateway RPC
-    execFileSync('clawdbot', ['gateway', 'config.patch', '--json', JSON.stringify(patch)], { encoding: 'utf8', stdio: 'pipe' });
+    execFileSync('openclaw', ['gateway', 'config.patch', '--json', JSON.stringify(patch)], { encoding: 'utf8', stdio: 'pipe' });
 
     // Add binding (read config to check, then patch if needed)
     if (telegramVerified) {
-      const configPath = join(process.env.HOME, '.clawdbot', 'clawdbot.json');
+      const configPath = join(process.env.HOME, '.openclaw', 'openclaw.json');
       const config = JSON.parse(readFileSync(configPath, 'utf8'));
       if (!config.bindings) config.bindings = [];
       const hasBinding = config.bindings.some(
@@ -268,7 +268,7 @@ node_modules/`);
     }
 
     // Ensure agent sessions directory exists (gateway needs it)
-    const agentSessionsDir = join(process.env.HOME, '.clawdbot', 'agents', id, 'sessions');
+    const agentSessionsDir = join(process.env.HOME, '.openclaw', 'agents', id, 'sessions');
     mkdirSync(agentSessionsDir, { recursive: true });
 
     steps.push('✅ Cross-agent permissions configured');
@@ -280,11 +280,11 @@ node_modules/`);
   }
 
   // 6. Update dashboard agents.json
-  steps.push('🏰 Adding to Clawd Control');
+  steps.push('🏰 Adding to Ven Agents');
   try {
     const dashConfig = JSON.parse(readFileSync(join(DIR, 'agents.json'), 'utf8'));
     if (!dashConfig.agents.some(a => a.id === id)) {
-      const configPath = join(process.env.HOME, '.clawdbot', 'clawdbot.json');
+      const configPath = join(process.env.HOME, '.openclaw', 'openclaw.json');
       const config = JSON.parse(readFileSync(configPath, 'utf8'));
 
       dashConfig.agents.push({
@@ -308,7 +308,7 @@ node_modules/`);
   steps.push('🔄 Reloading gateway config');
   try {
     // Find gateway PID and send SIGUSR1 for hot reload
-    const pid = execFileSync('pgrep', ['-f', 'clawdbot.*gateway'], {
+    const pid = execFileSync('pgrep', ['-f', 'openclaw.*gateway'], {
       encoding: 'utf8', stdio: 'pipe'
     }).trim().split('\n')[0];
 
@@ -319,14 +319,14 @@ node_modules/`);
       throw new Error('Gateway PID not found');
     }
   } catch {
-    // Fallback: try clawdbot system event to nudge the gateway
+    // Fallback: try openclaw system event to nudge the gateway
     try {
-      execFileSync('clawdbot', ['system', 'event', '--mode', 'now', '--text', 'New agent created — config reloaded'], {
+      execFileSync('openclaw', ['system', 'event', '--mode', 'now', '--text', 'New agent created — config reloaded'], {
         encoding: 'utf8', stdio: 'pipe', timeout: 5000
       });
       steps.push('⚠️ Config reload signal sent — gateway will pick up changes on next cycle');
     } catch {
-      steps.push('⚠️ Could not signal gateway — restart manually: clawdbot gateway restart');
+      steps.push('⚠️ Could not signal gateway — restart manually: openclaw gateway restart');
     }
   }
 

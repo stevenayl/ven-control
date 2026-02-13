@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Clawd Control — Self-Check
+ * Ven Agents — Self-Check
  * 
- * Run on any Clawdbot agent to verify essential skills, settings, and tools.
+ * Run on any OpenClaw agent to verify essential skills, settings, and tools.
  * Outputs a JSON report with pass/fail/warn for each check.
  * 
  * Usage: node check.mjs [--workspace /path] [--json] [--post]
@@ -172,7 +172,7 @@ for (const [script, desc] of requiredScripts) {
 // 6. GATEWAY CONFIG
 // ═══════════════════════════════════════════
 const configPaths = [
-  join(process.env.HOME || '', '.clawdbot', 'clawdbot.json'),
+  join(process.env.HOME || '', '.openclaw', 'openclaw.json'),
 ];
 
 let gatewayConfig = null;
@@ -230,7 +230,7 @@ if (gatewayConfig) {
     warn('Gateway Config', 'Browser', 'Not enabled');
   }
 } else {
-  fail('Gateway Config', 'clawdbot.json', 'Config file not found');
+  fail('Gateway Config', 'openclaw.json', 'Config file not found');
 }
 
 // ═══════════════════════════════════════════
@@ -270,7 +270,7 @@ if (flags.json) {
   console.log(JSON.stringify(results, null, 2));
 } else {
   const icon = { pass: '✅', fail: '❌', warn: '⚠️' };
-  console.log(`\n🏰 Clawd Control — ${results.agent || 'Unknown Agent'}`);
+  console.log(`\n🏰 Ven Agents — ${results.agent || 'Unknown Agent'}`);
   console.log(`   ${results.timestamp}\n`);
 
   let currentCat = '';

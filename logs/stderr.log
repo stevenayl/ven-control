@@ -1,0 +1,494 @@
+getTraces error: Error: ENOENT: no such file or directory, scandir '/Users/venagency/.clawdbot/agents'
+    at readdirSync (node:fs:1553:26)
+    at getTraces (file:///Users/venagency/clawd-control/server.mjs:924:22)
+    at Server.<anonymous> (file:///Users/venagency/clawd-control/server.mjs:1264:22)
+    at Server.emit (node:events:508:20)
+    at parserOnIncoming (node:_http_server:1213:12)
+    at HTTPParser.parserOnHeadersComplete (node:_http_common:125:17) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/Users/venagency/.clawdbot/agents'
+}
+getTraces error: Error: ENOENT: no such file or directory, scandir '/Users/venagency/.clawdbot/agents'
+    at readdirSync (node:fs:1553:26)
+    at getTraces (file:///Users/venagency/clawd-control/server.mjs:931:22)
+    at Server.<anonymous> (file:///Users/venagency/clawd-control/server.mjs:1271:22)
+    at Server.emit (node:events:508:20)
+    at parserOnIncoming (node:_http_server:1213:12)
+    at HTTPParser.parserOnHeadersComplete (node:_http_common:125:17) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/Users/venagency/.clawdbot/agents'
+}
+file:///Users/venagency/clawd-control/server.mjs:745
+  } catch {
+    ^^^^^
+
+SyntaxError: Unexpected token 'catch'
+    at compileSourceTextModule (node:internal/modules/esm/utils:305:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:110:18)
+    at #translate (node:internal/modules/esm/loader:467:20)
+    at afterLoad (node:internal/modules/esm/loader:523:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:528:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:571:36)
+    at afterResolve (node:internal/modules/esm/loader:619:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:625:12)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:32)
+    at TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+
+Node.js v25.6.0
+file:///Users/venagency/clawd-control/server.mjs:745
+  } catch {
+    ^^^^^
+
+SyntaxError: Unexpected token 'catch'
+    at compileSourceTextModule (node:internal/modules/esm/utils:305:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:110:18)
+    at #translate (node:internal/modules/esm/loader:467:20)
+    at afterLoad (node:internal/modules/esm/loader:523:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:528:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:571:36)
+    at afterResolve (node:internal/modules/esm/loader:619:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:625:12)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:32)
+    at TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+
+Node.js v25.6.0
+file:///Users/venagency/clawd-control/server.mjs:745
+  } catch {
+    ^^^^^
+
+SyntaxError: Unexpected token 'catch'
+    at compileSourceTextModule (node:internal/modules/esm/utils:305:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:110:18)
+    at #translate (node:internal/modules/esm/loader:467:20)
+    at afterLoad (node:internal/modules/esm/loader:523:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:528:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:571:36)
+    at afterResolve (node:internal/modules/esm/loader:619:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:625:12)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:32)
+    at TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+
+Node.js v25.6.0
+file:///Users/venagency/clawd-control/server.mjs:745
+  } catch {
+    ^^^^^
+
+SyntaxError: Unexpected token 'catch'
+    at compileSourceTextModule (node:internal/modules/esm/utils:305:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:110:18)
+    at #translate (node:internal/modules/esm/loader:467:20)
+    at afterLoad (node:internal/modules/esm/loader:523:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:528:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:571:36)
+    at afterResolve (node:internal/modules/esm/loader:619:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:625:12)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:32)
+    at TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+
+Node.js v25.6.0
+file:///Users/venagency/clawd-control/server.mjs:776
+  } catch {
+    ^^^^^
+
+SyntaxError: Unexpected token 'catch'
+    at compileSourceTextModule (node:internal/modules/esm/utils:305:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:110:18)
+    at #translate (node:internal/modules/esm/loader:467:20)
+    at afterLoad (node:internal/modules/esm/loader:523:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:528:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:571:36)
+    at afterResolve (node:internal/modules/esm/loader:619:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:625:12)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:32)
+    at TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+
+Node.js v25.6.0
+file:///Users/venagency/clawd-control/server.mjs:776
+  } catch {
+    ^^^^^
+
+SyntaxError: Unexpected token 'catch'
+    at compileSourceTextModule (node:internal/modules/esm/utils:305:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:110:18)
+    at #translate (node:internal/modules/esm/loader:467:20)
+    at afterLoad (node:internal/modules/esm/loader:523:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:528:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:571:36)
+    at afterResolve (node:internal/modules/esm/loader:619:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:625:12)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:32)
+    at TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+
+Node.js v25.6.0
+file:///Users/venagency/clawd-control/server.mjs:776
+  } catch {
+    ^^^^^
+
+SyntaxError: Unexpected token 'catch'
+    at compileSourceTextModule (node:internal/modules/esm/utils:305:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:110:18)
+    at #translate (node:internal/modules/esm/loader:467:20)
+    at afterLoad (node:internal/modules/esm/loader:523:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:528:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:571:36)
+    at afterResolve (node:internal/modules/esm/loader:619:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:625:12)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:32)
+    at TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+
+Node.js v25.6.0
+file:///Users/venagency/clawd-control/server.mjs:776
+  } catch {
+    ^^^^^
+
+SyntaxError: Unexpected token 'catch'
+    at compileSourceTextModule (node:internal/modules/esm/utils:305:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:110:18)
+    at #translate (node:internal/modules/esm/loader:467:20)
+    at afterLoad (node:internal/modules/esm/loader:523:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:528:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:571:36)
+    at afterResolve (node:internal/modules/esm/loader:619:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:625:12)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:32)
+    at TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+
+Node.js v25.6.0
+file:///Users/venagency/clawd-control/server.mjs:1055
+  } catch (e) {
+    ^^^^^
+
+SyntaxError: Unexpected token 'catch'
+    at compileSourceTextModule (node:internal/modules/esm/utils:305:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:110:18)
+    at #translate (node:internal/modules/esm/loader:467:20)
+    at afterLoad (node:internal/modules/esm/loader:523:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:528:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:571:36)
+    at afterResolve (node:internal/modules/esm/loader:619:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:625:12)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:32)
+    at TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+
+Node.js v25.6.0
+file:///Users/venagency/clawd-control/server.mjs:1055
+  } catch (e) {
+    ^^^^^
+
+SyntaxError: Unexpected token 'catch'
+    at compileSourceTextModule (node:internal/modules/esm/utils:305:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:110:18)
+    at #translate (node:internal/modules/esm/loader:467:20)
+    at afterLoad (node:internal/modules/esm/loader:523:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:528:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:571:36)
+    at afterResolve (node:internal/modules/esm/loader:619:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:625:12)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:32)
+    at TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+
+Node.js v25.6.0
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3100
+    at Server.setupListenHandle [as _listen2] (node:net:2008:16)
+    at listenInCluster (node:net:2065:12)
+    at node:net:2274:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2044:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3100
+}
+
+Node.js v25.6.0
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3100
+    at Server.setupListenHandle [as _listen2] (node:net:2008:16)
+    at listenInCluster (node:net:2065:12)
+    at node:net:2274:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2044:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3100
+}
+
+Node.js v25.6.0
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3100
+    at Server.setupListenHandle [as _listen2] (node:net:2008:16)
+    at listenInCluster (node:net:2065:12)
+    at node:net:2274:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2044:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3100
+}
+
+Node.js v25.6.0
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3100
+    at Server.setupListenHandle [as _listen2] (node:net:2008:16)
+    at listenInCluster (node:net:2065:12)
+    at node:net:2274:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2044:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3100
+}
+
+Node.js v25.6.0
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3100
+    at Server.setupListenHandle [as _listen2] (node:net:2008:16)
+    at listenInCluster (node:net:2065:12)
+    at node:net:2274:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2044:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3100
+}
+
+Node.js v25.6.0
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3100
+    at Server.setupListenHandle [as _listen2] (node:net:2008:16)
+    at listenInCluster (node:net:2065:12)
+    at node:net:2274:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2044:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3100
+}
+
+Node.js v25.6.0
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3100
+    at Server.setupListenHandle [as _listen2] (node:net:2008:16)
+    at listenInCluster (node:net:2065:12)
+    at node:net:2274:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2044:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3100
+}
+
+Node.js v25.6.0
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3100
+    at Server.setupListenHandle [as _listen2] (node:net:2008:16)
+    at listenInCluster (node:net:2065:12)
+    at node:net:2274:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2044:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3100
+}
+
+Node.js v25.6.0
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3100
+    at Server.setupListenHandle [as _listen2] (node:net:2008:16)
+    at listenInCluster (node:net:2065:12)
+    at node:net:2274:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2044:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3100
+}
+
+Node.js v25.6.0
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3100
+    at Server.setupListenHandle [as _listen2] (node:net:2008:16)
+    at listenInCluster (node:net:2065:12)
+    at node:net:2274:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2044:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3100
+}
+
+Node.js v25.6.0
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+getTraces error: Error: ENOENT: no such file or directory, scandir '/Users/venagency/.openclaw/agents'
+    at readdirSync (node:fs:1553:26)
+    at getTraces (file:///Users/venagency/clawd-control/server.mjs:924:22)
+    at Server.<anonymous> (file:///Users/venagency/clawd-control/server.mjs:1264:22)
+    at Server.emit (node:events:508:20)
+    at parserOnIncoming (node:_http_server:1213:12)
+    at HTTPParser.parserOnHeadersComplete (node:_http_common:125:17) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/Users/venagency/.openclaw/agents'
+}
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:18789:pi_gatew] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3101:sales-mi] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3016:ven-secu] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf
+[127.0.0.1:3102:ops-miss] connect error: invalid connect params: at /client/id: must be equal to constant; at /client/id: must match a schema in anyOf

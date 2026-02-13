@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Clawd Control — Server
+ * Ven Agents — Server
  * 
  * HTTP server with REST API + SSE for live dashboard updates.
  * Aggregates data from AgentCollector.
@@ -142,10 +142,10 @@ async function handleAgentAction(agentId, action) {
     switch (action) {
       case 'heartbeat-enable': {
         // Runtime toggle
-        execFileSync('clawdbot', ['system', 'heartbeat', 'enable'], { encoding: 'utf8', stdio: 'pipe' });
+        execFileSync('openclaw', ['system', 'heartbeat', 'enable'], { encoding: 'utf8', stdio: 'pipe' });
         // Also persist via gateway config.patch
         try {
-          execFileSync('clawdbot', ['gateway', 'config.patch', '--json', JSON.stringify({
+          execFileSync('openclaw', ['gateway', 'config.patch', '--json', JSON.stringify({
             agents: { defaults: { heartbeat: { every: '55m' } } }
           })], { encoding: 'utf8', stdio: 'pipe' });
         } catch (_) { /* best effort */ }
@@ -153,23 +153,23 @@ async function handleAgentAction(agentId, action) {
       }
       case 'heartbeat-disable': {
         // Runtime toggle
-        execFileSync('clawdbot', ['system', 'heartbeat', 'disable'], { encoding: 'utf8', stdio: 'pipe' });
+        execFileSync('openclaw', ['system', 'heartbeat', 'disable'], { encoding: 'utf8', stdio: 'pipe' });
         // Also persist via gateway config.patch
         try {
-          execFileSync('clawdbot', ['gateway', 'config.patch', '--json', JSON.stringify({
+          execFileSync('openclaw', ['gateway', 'config.patch', '--json', JSON.stringify({
             agents: { defaults: { heartbeat: { every: 'off' } } }
           })], { encoding: 'utf8', stdio: 'pipe' });
         } catch (_) { /* best effort */ }
         return { ok: true, message: `Heartbeat disabled for ${agentId}` };
       }
       case 'heartbeat-trigger': {
-        execFileSync('clawdbot', ['system', 'event', '--mode', 'now', '--text', 'Manual heartbeat trigger from Clawd Control'], { encoding: 'utf8', stdio: 'pipe' });
+        execFileSync('openclaw', ['system', 'event', '--mode', 'now', '--text', 'Manual heartbeat trigger from Ven Agents'], { encoding: 'utf8', stdio: 'pipe' });
         return { ok: true, message: `Heartbeat triggered for ${agentId}` };
       }
       case 'session-new': {
         // Clear only the main session to start fresh (keeps other sessions)
         const mainAgentId = agentId === 'gandalf' ? 'main' : agentId;
-        const sessPath = join(process.env.HOME, '.clawdbot', 'agents', mainAgentId, 'sessions', 'sessions.json');
+        const sessPath = join(process.env.HOME, '.openclaw', 'agents', mainAgentId, 'sessions', 'sessions.json');
         if (existsSync(sessPath)) {
           const sessions = JSON.parse(readFileSync(sessPath, 'utf8'));
           const mainKey = `agent:${mainAgentId}:main`;
@@ -177,7 +177,7 @@ async function handleAgentAction(agentId, action) {
             // Backup the session transcript before clearing
             const sid = sessions[mainKey].sessionId;
             if (sid) {
-              const transcript = join(process.env.HOME, '.clawdbot', 'agents', mainAgentId, 'sessions', `${sid}.jsonl`);
+              const transcript = join(process.env.HOME, '.openclaw', 'agents', mainAgentId, 'sessions', `${sid}.jsonl`);
               if (existsSync(transcript)) {
                 const bak = transcript.replace('.jsonl', `.archived.${Date.now()}.jsonl`);
                 copyFileSync(transcript, bak);
@@ -192,7 +192,7 @@ async function handleAgentAction(agentId, action) {
       case 'session-reset': {
         // Delete ALL sessions (nuclear option)
         const agentIdForPath = agentId === 'gandalf' ? 'main' : agentId;
-        const sessionPath = join(process.env.HOME, '.clawdbot', 'agents', agentIdForPath, 'sessions', 'sessions.json');
+        const sessionPath = join(process.env.HOME, '.openclaw', 'agents', agentIdForPath, 'sessions', 'sessions.json');
         if (existsSync(sessionPath)) {
           const backup = sessionPath + '.bak.' + Date.now();
           copyFileSync(sessionPath, backup);
@@ -353,7 +353,7 @@ function getAgentDetail(agentId) {
 import { homedir } from 'os';
 
 function getAnalytics(rangeStr, agentFilter) {
-  const AGENTS_DIR = join(homedir(), '.clawdbot', 'agents');
+  const AGENTS_DIR = join(homedir(), '.openclaw', 'agents');
   const range = rangeStr === 'all' ? Infinity : parseInt(rangeStr);
   const cutoffDate = rangeStr === 'all' ? 0 : Date.now() - (range * 86400000);
 
@@ -549,7 +549,7 @@ function getAnalytics(rangeStr, agentFilter) {
 
 // ── Token Analytics (granular breakdown by day and agent) ──
 function getTokenAnalytics(rangeStr, agentFilter) {
-  const AGENTS_DIR = join(homedir(), '.clawdbot', 'agents');
+  const AGENTS_DIR = join(homedir(), '.openclaw', 'agents');
   const range = rangeStr === 'all' ? Infinity : parseInt(rangeStr);
   const cutoffDate = rangeStr === 'all' ? 0 : Date.now() - (range * 86400000);
 
@@ -709,7 +709,7 @@ function getTokenAnalytics(rangeStr, agentFilter) {
 // ── Session Trace (for waterfall view) ─────────────
 
 function getAllSessions() {
-  const AGENTS_DIR = join(homedir(), '.clawdbot', 'agents');
+  const AGENTS_DIR = join(homedir(), '.openclaw', 'agents');
   const sessions = [];
 
   try {
@@ -752,7 +752,7 @@ function getAllSessions() {
 }
 
 function getSessionTrace(sessionKey) {
-  const AGENTS_DIR = join(homedir(), '.clawdbot', 'agents');
+  const AGENTS_DIR = join(homedir(), '.openclaw', 'agents');
   
   // Find the session file
   let sessionFile = null;
@@ -916,7 +916,7 @@ function getSessionTrace(sessionKey) {
 // ── Traces (delegation trees) ──────────────────────
 
 function getTraces() {
-  const AGENTS_DIR = join(homedir(), '.clawdbot', 'agents');
+  const AGENTS_DIR = join(homedir(), '.openclaw', 'agents');
   const traces = [];
   const sessionMap = new Map(); // sessionKey -> session metadata
 
@@ -1198,8 +1198,8 @@ const server = createServer((req, res) => {
   // ── Crons ──
   if (path === '/api/crons' && req.method === 'GET') {
     try {
-      const clawdbotBin = join(process.execPath, '..', 'clawdbot');
-      const output = execFileSync(clawdbotBin, ['cron', 'list', '--json'], { encoding: 'utf8', stdio: 'pipe', timeout: 10000 });
+      const openclawBin = join(process.execPath, '..', 'openclaw');
+      const output = execFileSync(openclawBin, ['cron', 'list', '--json'], { encoding: 'utf8', stdio: 'pipe', timeout: 10000 });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(output);
     } catch (e) {
@@ -1400,7 +1400,7 @@ const LOGIN_HTML = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login — Clawd Control</title>
+<title>Login — Ven Agents</title>
 <style>
   :root { --bg: #0f1117; --card: #1a1d27; --border: #2a2d3a; --text: #e4e4e7; --muted: #71717a; --accent: #c9a44a; --accent-hover: #d4af5a; --red: #ef4444; --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1426,7 +1426,7 @@ const LOGIN_HTML = `<!DOCTYPE html>
 <body>
 <div class="login-box">
   <h1><i data-lucide="castle" style="width:2rem;height:2rem;display:inline-block;vertical-align:middle"></i></h1>
-  <p class="sub">Clawd Control</p>
+  <p class="sub">Ven Agents</p>
   <form onsubmit="login(event)">
     <input type="password" id="pw" placeholder="Password" autofocus autocomplete="current-password">
     <div class="error" id="err"></div>
@@ -1467,7 +1467,7 @@ async function login(e) {
 const BIND = process.argv.find((_, i, a) => a[i - 1] === '--bind') || '0.0.0.0';
 
 server.listen(PORT, BIND, () => {
-  console.log(`🏰 Clawd Control v2.0`);
+  console.log(`🏰 Ven Agents v2.0`);
   console.log(`   http://${BIND}:${PORT}`);
   console.log(`   Agents: ${collector.agents.size}`);
   console.log(`   🔐 Auth: enabled (password in auth.json)`);

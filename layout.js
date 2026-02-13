@@ -1,5 +1,5 @@
 /**
- * layout.js — Shared layout module for Clawd Control
+ * layout.js — Shared layout module for Ven Agents
  *
  * Injects sidebar + topbar + design-system CSS into every page.
  * Manages SSE connection, theme, sidebar collapse, and keyboard shortcuts.
@@ -38,11 +38,13 @@
                 ? 'traces'
                 : path === '/crons.html'
                   ? 'crons'
-                  : path.startsWith('/agent/')
-                    ? 'agent-detail'
-                    : path === '/gandalf-view.html'
-                      ? 'gandalf'
-                      : 'other';
+                  : path === '/security-audit.html'
+                    ? 'security-audit'
+                    : path.startsWith('/agent/')
+                      ? 'agent-detail'
+                      : path === '/gandalf-view.html'
+                        ? 'gandalf'
+                        : 'other';
   const activeAgentId =
     activePage === 'agent-detail'
       ? decodeURIComponent(path.split('/').filter(Boolean).pop())
@@ -196,6 +198,23 @@ body.sidebar-collapsed .topbar { grid-column: 1 / -1; }
   z-index: 100;
 }
 .topbar-left { display: flex; align-items: center; gap: 10px; }
+.hamburger-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
+}
+.hamburger-btn:hover {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+@media (max-width: 800px) {
+  .hamburger-btn { display: flex; align-items: center; }
+}
 .topbar-left .status-dot {
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--text-tertiary); flex-shrink: 0;
@@ -336,9 +355,22 @@ body.sidebar-collapsed .topbar { grid-column: 1 / -1; }
 /* ── Responsive ────────────────────────── */
 
 @media (max-width: 800px) {
-  body { grid-template-columns: 0px 1fr; }
-  .sidebar { display: none; }
-  .main { padding: 16px; }
+  body { grid-template-columns: 1fr; }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 200;
+    box-shadow: var(--shadow-lg);
+  }
+  body:not(.sidebar-collapsed) .sidebar {
+    transform: translateX(0);
+  }
+  .main { padding: 16px; grid-column: 1; }
+  .topbar { grid-column: 1; }
 }
 
 /* ── Accessibility ─────────────────────── */
@@ -386,8 +418,11 @@ body.sidebar-collapsed .topbar { grid-column: 1 / -1; }
     topbar.className = 'topbar';
     topbar.innerHTML = `
       <div class="topbar-left">
+        <button class="hamburger-btn" onclick="window.toggleSidebar()" title="Toggle sidebar">
+          <i data-lucide="menu" style="width:20px;height:20px"></i>
+        </button>
         <span class="status-dot" id="connDot"></span>
-        <span class="topbar-title">Clawd Control</span>
+        <span class="topbar-title">Ven Agents</span>
         <span class="topbar-time" id="topbarTime"></span>
         <div class="fleet-bar" id="fleetBar"></div>
       </div>
@@ -453,6 +488,10 @@ body.sidebar-collapsed .topbar { grid-column: 1 / -1; }
       <a href="/crons.html" class="nav-item${isActive('crons')}">
         <i data-lucide="clock" class="nav-icon"></i>
         <span class="nav-label">Cron Jobs</span>
+      </a>
+      <a href="/security-audit.html" class="nav-item${isActive('security-audit')}">
+        <i data-lucide="shield" class="nav-icon"></i>
+        <span class="nav-label">Security Audit</span>
       </a>
 
       <div class="sidebar-section">Actions</div>
